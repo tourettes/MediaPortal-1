@@ -367,7 +367,7 @@ void AudioRendererSettings::LoadSettingsFromRegistry()
     delete[] m_wWASAPIPreferredDeviceId;
     m_wWASAPIPreferredDeviceId = new WCHAR[MAX_REG_LENGTH];
     
-    wcsncpy(m_wWASAPIPreferredDeviceId, T2W(WASAPIPreferredDeviceData), MAX_REG_LENGTH);
+    _tcsncpy(m_wWASAPIPreferredDeviceId, WASAPIPreferredDeviceData, MAX_REG_LENGTH);
 
     delete[] WASAPIPreferredDeviceData;
   }
@@ -411,7 +411,7 @@ void AudioRendererSettings::LoadSettingsFromRegistry()
 
       delete[] m_wWASAPIPreferredDeviceId;
       m_wWASAPIPreferredDeviceId = new WCHAR[MAX_REG_LENGTH];
-      wcsncpy(m_wWASAPIPreferredDeviceId, T2W(WASAPIPreferredDeviceData), MAX_REG_LENGTH);
+      _tcsncpy(m_wWASAPIPreferredDeviceId, WASAPIPreferredDeviceData, MAX_REG_LENGTH);
 
       WriteRegistryKeyString(hKey, WASAPIPreferredDevice, WASAPIPreferredDeviceData);
     } 
@@ -541,7 +541,7 @@ void AudioRendererSettings::ReadRegistryKeyString(HKEY hKey, LPCTSTR& lpSubKey, 
 
 void AudioRendererSettings::WriteRegistryKeyString(HKEY hKey, LPCTSTR& lpSubKey, LPCTSTR& data)
 {  
-  LONG result = RegSetValueEx(hKey, lpSubKey, 0, REG_SZ, (LPBYTE)data, strlen(data)+1);
+  LONG result = RegSetValueEx(hKey, lpSubKey, 0, REG_SZ, (LPBYTE)data, _tcslen(data)+1);
   if (result == ERROR_SUCCESS) 
     Log("Success writing to Registry: %s", lpSubKey);
   else 
@@ -747,8 +747,8 @@ HRESULT AudioRendererSettings::GetAvailableAudioDevices(IMMDeviceCollection** pp
   {
     if (hDialog)
     {
-      LPSTR defaultDevice = "<OS default audio device>";
-      SendDlgItemMessage(hDialog, IDC_AUDIO_DEVICE, CB_ADDSTRING, 0, (LPARAM)defaultDevice);
+      TCHAR* pDefaultDevice = _T("<OS default audio device>");
+      SendDlgItemMessage(hDialog, IDC_AUDIO_DEVICE, CB_ADDSTRING, 0, (LPARAM)pDefaultDevice);
       SendDlgItemMessage(hDialog, IDC_AUDIO_DEVICE, CB_SETCURSEL, 0, 0);
     }
 

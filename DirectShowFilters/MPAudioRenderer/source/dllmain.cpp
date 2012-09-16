@@ -102,22 +102,22 @@ STDAPI DllUnregisterServer()
 // To be replaced when MP2 has generic C++ log framework available
 //
 
-void LogPath(char* dest, char* name)
+void LogPath(TCHAR* dest, TCHAR* name)
 {
   TCHAR folder[MAX_PATH];
   SHGetSpecialFolderPath(NULL,folder,CSIDL_COMMON_APPDATA,FALSE);
-  sprintf(dest,"%s\\Team Mediaportal\\MediaPortal\\log\\AudioRenderer.%s",folder,name);
+  _stprintf(dest, _T("%s\\Team Mediaportal\\MediaPortal\\log\\AudioRenderer.%s"), folder, name);
 }
 
 void LogRotate()
 {
   TCHAR fileName[MAX_PATH];
-  LogPath(fileName, "log");
+  LogPath(fileName, _T("log"));
   TCHAR bakFileName[MAX_PATH];
-  LogPath(bakFileName, "bak");
-  remove(bakFileName);
+  LogPath(bakFileName, _T("bak"));
+  _tremove(bakFileName);
   // ignore if rename fails 
-  (void)rename(fileName, bakFileName);
+  (void)_trename(fileName, bakFileName);
 }
 
 CCritSec m_qLock;
@@ -142,7 +142,7 @@ UINT CALLBACK LogThread(void* param)
   SetThreadName(0, "LoggerThread");
 
   TCHAR fileName[MAX_PATH];
-  LogPath(fileName, "log");
+  LogPath(fileName, _T("log"));
 
   HANDLE handles[2];
   handles[0] = m_eLog;
@@ -152,7 +152,7 @@ UINT CALLBACK LogThread(void* param)
   {
     if (m_logQueue.size() > 0)
     {
-      FILE* pFile = fopen(fileName, "a+");
+      FILE* pFile = _tfopen(fileName, _T("a+"));
       if (pFile)
       {
         SYSTEMTIME systemTime;
@@ -171,7 +171,7 @@ UINT CALLBACK LogThread(void* param)
     if (result == WAIT_FAILED)
     {
       DWORD error = GetLastError();
-      FILE* pFile = fopen(fileName, "a+");
+      FILE* pFile = _tfopen(fileName, _T("a+"));
       if (pFile)
       {
         fprintf(pFile, "LoggerThread - WaitForMultipleObjects failed, result: %d error: %d\n", result, error);
