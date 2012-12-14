@@ -306,13 +306,23 @@ namespace WindowPlugins.GUISettings
       using (Settings xmlreader = new MPSettings())
       {
         xmlreader.SetValue("general", "skinobsoletecount", 0);
-        bool autosize = xmlreader.GetValueAsBool("gui", "autosize", true);
-        if (autosize && !GUIGraphicsContext.Fullscreen)
+        if (!GUIGraphicsContext.Fullscreen)
         {
           try
           {
-            GUIGraphicsContext.form.ClientSize = new Size(GUIGraphicsContext.SkinSize.Width, GUIGraphicsContext.SkinSize.Height);
-            //Form.ActiveForm.ClientSize = new Size(GUIGraphicsContext.SkinSize.Width, GUIGraphicsContext.SkinSize.Height);
+            var border = new Size(GUIGraphicsContext.form.Width - GUIGraphicsContext.form.ClientSize.Width, 
+                                  GUIGraphicsContext.form.Height - GUIGraphicsContext.form.ClientSize.Height);
+            if (GUIGraphicsContext.SkinSize.Width + border.Width <= GUIGraphicsContext.currentScreen.WorkingArea.Width &&
+                GUIGraphicsContext.SkinSize.Height + border.Height <= GUIGraphicsContext.currentScreen.WorkingArea.Height)
+            {
+              GUIGraphicsContext.form.ClientSize = new Size(GUIGraphicsContext.SkinSize.Width, GUIGraphicsContext.SkinSize.Height);
+            }
+            else
+            {
+              double ratio = Math.Min((double)(GUIGraphicsContext.currentScreen.WorkingArea.Width - border.Width) / GUIGraphicsContext.SkinSize.Width,
+                                      (double)(GUIGraphicsContext.currentScreen.WorkingArea.Height - border.Height) / GUIGraphicsContext.SkinSize.Height);
+              GUIGraphicsContext.form.ClientSize = new Size((int)(GUIGraphicsContext.SkinSize.Width * ratio), (int)(GUIGraphicsContext.SkinSize.Height * ratio));
+            }
           }
           catch (Exception ex)
           {
