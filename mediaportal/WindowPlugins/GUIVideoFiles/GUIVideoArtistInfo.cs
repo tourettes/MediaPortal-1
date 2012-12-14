@@ -56,10 +56,10 @@ namespace MediaPortal.GUI.Video
     #region Base Variables
 
     private int _actorIdState = -1; // Current session setting
-    private int _selectedItemState = -1; //last selected item index
     private string _viewModeState = string.Empty;
     private bool _movieInfoBeforePlay;
     private bool _playClicked;
+    private int _currentSelectedItem = -1;
     
     private bool _forceRefreshAll; // Refresh all movies (context menu)
     
@@ -380,6 +380,18 @@ namespace MediaPortal.GUI.Video
         listActorMovies.Add(item);
       }
 
+      
+      if (listActorMovies.ListItems.Count == 0)
+      {
+        GUIListItem item = new GUIListItem();
+        item.Label = GUILocalizeStrings.Get(284);
+        IMDBMovie movie = item.AlbumInfoTag as IMDBMovie;
+        movie = new IMDBMovie();
+        item.AlbumInfoTag = movie;
+        listActorMovies.Add(item);
+      }
+      
+      _currentSelectedItem = 0;
       string largeCoverArtImage = Util.Utils.GetLargeCoverArtName(Thumbs.MovieActors, _currentActor.ID.ToString());
 
       if (imgCoverArt != null)
@@ -423,6 +435,9 @@ namespace MediaPortal.GUI.Video
           if (tbMovieArea != null) tbMovieArea.IsVisible = false;
           if (tbMoviePlot != null) tbMoviePlot.IsVisible = true;
           if (imgMovieCover != null) imgMovieCover.IsVisible = true;
+          GUIPropertyManager.SetProperty("#itemcount", Util.Utils.GetObjectCountLabel(_currentActor.Count));
+          listActorMovies.SelectedListItemIndex = _currentSelectedItem;
+          SelectItem();
         }
         else
         {
@@ -450,7 +465,17 @@ namespace MediaPortal.GUI.Video
           listActorMovies.Focus = false;
           if (tbMoviePlot != null) tbMoviePlot.IsVisible = false;
           if (imgMovieCover != null) imgMovieCover.IsVisible = false;
+          _currentSelectedItem = listActorMovies.SelectedListItemIndex;
+          GUIPropertyManager.SetProperty("#itemcount", string.Empty);
         }
+      }
+    }
+
+    private void SelectItem()
+    {
+      if (_currentSelectedItem >= 0 && listActorMovies != null)
+      {
+        GUIControl.SelectItemControl(GetID, listActorMovies.GetID, _currentSelectedItem);
       }
     }
 
@@ -458,18 +483,33 @@ namespace MediaPortal.GUI.Video
     {
       if (item != null)
       {
-        GUIPropertyManager.SetProperty("#Actor.MoviePlot", ListItemMovieInfo(item).MoviePlot);
-        GUIPropertyManager.SetProperty("#Actor.MovieImage", item.ThumbnailImage);
-        GUIPropertyManager.SetProperty("#imdbnumber", ListItemMovieInfo(item).MovieImdbID);
-        GUIPropertyManager.SetProperty("#Actor.MovieExtraDetails", GUILocalizeStrings.Get(199) + " " +
-                                                                   ListItemMovieInfo(item).MovieCredits.Replace(" /", ",") + " : : : " +
-                                                                   GUILocalizeStrings.Get(174) + " " +
-                                                                   ListItemMovieInfo(item).MovieGenre.Replace(" /", ",") + " : : : " +
-                                                                   GUILocalizeStrings.Get(204) + " " +
-                                                                   ListItemMovieInfo(item).MovieMpaaRating + " : : : " +
-                                                                   GUILocalizeStrings.Get(344) + ": " +
-                                                                   ListItemMovieInfo(item).MovieCast.Replace(" /", ","));
-        GUIPropertyManager.SetProperty("#Actor.MovieTitle", ListItemMovieInfo(item).MovieTitle);
+        if (ListItemMovieInfo(item) != null)
+        {
+          GUIPropertyManager.SetProperty("#Actor.MoviePlot", ListItemMovieInfo(item).MoviePlot);
+          GUIPropertyManager.SetProperty("#Actor.MovieImage", item.ThumbnailImage);
+          GUIPropertyManager.SetProperty("#imdbnumber", ListItemMovieInfo(item).MovieImdbID);
+          GUIPropertyManager.SetProperty("#Actor.MovieExtraDetails", GUILocalizeStrings.Get(199) + " " +
+                                                                     ListItemMovieInfo(item).MovieCredits.Replace(" /",
+                                                                                                                  ",") +
+                                                                     "  |  " +
+                                                                     GUILocalizeStrings.Get(174) + " " +
+                                                                     ListItemMovieInfo(item).MovieGenre.Replace(" /",
+                                                                                                                ",") +
+                                                                     "  |  " +
+                                                                     GUILocalizeStrings.Get(204) + " " +
+                                                                     ListItemMovieInfo(item).MovieMpaaRating + "  |  " +
+                                                                     GUILocalizeStrings.Get(344) + ": " +
+                                                                     ListItemMovieInfo(item).MovieCast.Replace(" /", ","));
+          GUIPropertyManager.SetProperty("#Actor.MovieTitle", ListItemMovieInfo(item).MovieTitle);
+        }
+        else
+        {
+          GUIPropertyManager.SetProperty("#Actor.MoviePlot", string.Empty);
+          GUIPropertyManager.SetProperty("#Actor.MovieImage", string.Empty);
+          GUIPropertyManager.SetProperty("#imdbnumber", string.Empty);
+          GUIPropertyManager.SetProperty("#Actor.MovieExtraDetails", string.Empty);
+          GUIPropertyManager.SetProperty("#Actor.MovieTitle", string.Empty);
+        }
         // For fanart handler
         if (item.IsPlayed)
         {
@@ -540,8 +580,7 @@ namespace MediaPortal.GUI.Video
           return;
         }
         dlg.SetHeading(GUILocalizeStrings.Get(1020));
-        dlg.SetLine(1, "Refreshing is already active.");
-        dlg.SetLine(2, "Please wait to finish it first.");
+        dlg.SetLine(1, GUILocalizeStrings.Get(1311)); // Refresh is already active.
         dlg.DoModal(GetID);
         return;
       }
@@ -555,7 +594,6 @@ namespace MediaPortal.GUI.Video
       {
         _viewModeState = xmlreader.GetValueAsString("VideoArtistInfo", "lastview", string.Empty);
         _actorIdState = xmlreader.GetValueAsInt("VideoArtistInfo", "actorid", -1);
-        _selectedItemState = xmlreader.GetValueAsInt("VideoArtistInfo", "itemid", -1);
         
         if (_currentActor.ID == _actorIdState)
         {
@@ -564,11 +602,12 @@ namespace MediaPortal.GUI.Video
               GUIWindowManager.GetPreviousActiveWindow() != (int)Window.WINDOW_VIDEO_INFO)
           {
             _viewmode = ViewMode.Movies;
-            if (_selectedItemState >= 0 && listActorMovies != null && listActorMovies.Count >= _selectedItemState)
+
+            if (_currentSelectedItem >= 0 && listActorMovies != null && listActorMovies.Count >= _currentSelectedItem)
             {
+              _currentSelectedItem = xmlreader.GetValueAsInt("VideoArtistInfo", "itemid", -1);
               Update();
-              listActorMovies.SelectedListItemIndex = _selectedItemState;
-              OnItemSelected(listActorMovies[_selectedItemState], listActorMovies);
+              SelectItem();
             }
           }
           else
@@ -579,7 +618,11 @@ namespace MediaPortal.GUI.Video
         else
         {
           if (_viewmode == ViewMode.Movies && listActorMovies != null && listActorMovies.Count >= 0)
-            OnItemSelected(listActorMovies[0], listActorMovies);
+          {
+            _currentSelectedItem = 0;
+            SelectItem();
+          }
+          
           GetMovieDetails();
         }
       }
@@ -742,6 +785,11 @@ namespace MediaPortal.GUI.Video
 
     private void GetDetails(GUIListItem item)
     {
+      if (ListItemMovieInfo(item) == null)
+      {
+        return;
+      }
+
       string plot = ListItemMovieInfo(item).MoviePlot;
       string cover = item.ThumbnailImage;
       string tempItemLabel = item.Label; // To show Downloading on list item then switch to original label
@@ -838,7 +886,7 @@ namespace MediaPortal.GUI.Video
           
           if (!string.IsNullOrEmpty(thumb))
           {
-            Util.Utils.DownLoadAndCacheImage(thumb, temporaryFilename);
+            Util.Utils.DownLoadAndOverwriteCachedImage(thumb, temporaryFilename);
             // Convert downloaded image to large and small file and save on disk
             SaveCover(temporaryFilename, filenameL); // Temp file is deleted in SetCover method
           }
@@ -867,7 +915,8 @@ namespace MediaPortal.GUI.Video
                                     columnData,
                                     ListItemMovieInfo(item).MovieImdbID);
         bool error = false;
-        VideoDatabase.ExecuteSql(sql, out error);
+        string errorMessage = string.Empty;
+        VideoDatabase.ExecuteSql(sql, out error, out errorMessage);
       }
       catch (Exception) {}
     }

@@ -370,7 +370,7 @@ public class MediaPortalApp : D3DApp, IRender
       UIntPtr res = UIntPtr.Zero;
 
       int options = Convert.ToInt32(Reg.RegistryRights.ReadKey);
-      if (OSInfo.OSInfo.OsVersionInt() >= 52)
+      if (OSInfo.OSInfo.Xp64OrLater())
       {
         options = options | Convert.ToInt32(Reg.RegWow64Options.KEY_WOW64_64KEY);
       }
@@ -1812,7 +1812,7 @@ public class MediaPortalApp : D3DApp, IRender
     using (Settings xmlreader = new MPSettings())
     {
       _useLongDateFormat = xmlreader.GetValueAsBool("home", "LongTimeFormat", false);
-      _startWithBasicHome = xmlreader.GetValueAsBool("gui", "startbasichome", false);
+      _startWithBasicHome = xmlreader.GetValueAsBool("gui", "startbasichome", true);
       _useOnlyOneHome = xmlreader.GetValueAsBool("gui", "useonlyonehome", false);
       bool autosize = xmlreader.GetValueAsBool("gui", "autosize", true);
       if (autosize && !GUIGraphicsContext.Fullscreen)
@@ -3919,20 +3919,19 @@ public class MediaPortalApp : D3DApp, IRender
     }
 
     // Skin is incompatible, switch to default
-    _OutdatedSkinName = m_strSkin;
+    _OutdatedSkinName = GUIGraphicsContext.SkinName;
     float screenHeight = GUIGraphicsContext.currentScreen.Bounds.Height;
     float screenWidth = GUIGraphicsContext.currentScreen.Bounds.Width;
     float screenRatio = (screenWidth / screenHeight);
-    m_strSkin = screenRatio > 1.5 ? "DefaultWide" : "Default";
-    Config.SkinName = m_strSkin;
-    GUIGraphicsContext.Skin = m_strSkin;
+    GUIGraphicsContext.Skin = screenRatio > 1.5 ? "DefaultWide" : "Default";
+    Config.SkinName = GUIGraphicsContext.SkinName;
     SkinSettings.Load();
 
     // Send a message that the skin has changed.
     GUIMessage msg = new GUIMessage(GUIMessage.MessageType.GUI_MSG_SKIN_CHANGED, 0, 0, 0, 0, 0, null);
     GUIGraphicsContext.SendMessage(msg);
 
-    Log.Info("Main: User skin is not compatable, using skin {0} with theme {1}", m_strSkin, GUIThemeManager.CurrentTheme);
+    Log.Info("Main: User skin is not compatible, using skin {0} with theme {1}", GUIGraphicsContext.SkinName, GUIThemeManager.CurrentTheme);
   }
 
 
