@@ -182,9 +182,9 @@ void CEpgParser::OnNewSection(int pid,int tableId,CSection& section)
 void CEpgParser::AddSectionDecoder(int pid)
 {
 	CSectionDecoder* pDecoder= new CSectionDecoder();
-  pDecoder->SetPid(pid);
+    pDecoder->SetPid(pid);
 	if (DisableCRCCheck())
 		pDecoder->EnableCrcCheck(false);
 	pDecoder->SetCallBack(this);
-  m_vecDecoders.push_back(pDecoder);
+    m_vecDecoders.push_back(pDecoder);
 }

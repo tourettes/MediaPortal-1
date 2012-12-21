@@ -64,7 +64,7 @@ STDMETHODIMP CCaGrabber::SetCallBack( ICACallback* callback)
 
 void CCaGrabber::OnTsPacket(byte* tsPacket)
 {
-  CEnterCriticalSection enter(m_section);
+    CEnterCriticalSection enter(m_section);
 	if (m_pCallback==NULL) return;
 	CSectionDecoder::OnTsPacket(tsPacket);
 }

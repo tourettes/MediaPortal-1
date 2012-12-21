@@ -45,7 +45,7 @@ CEpgScanner::~CEpgScanner(void)
 STDMETHODIMP CEpgScanner::SetCallBack(IEpgCallback* callback)
 {
 	LogDebug("epg: set callback");
-  m_pCallBack=callback;
+    m_pCallBack=callback;
 	return S_OK;
 }
 
@@ -303,11 +303,11 @@ void CEpgScanner::OnTsPacket(byte* tsPacket)
   if (!m_bGrabbing) return;
 	try
 	{
+		CEnterCriticalSection enter(m_section);
 		int pid=((tsPacket[1] & 0x1F) <<8)+tsPacket[2];
 		if (!IsEIT_PID(pid)) return;
 		{
 			m_header.Decode(tsPacket);
-			CEnterCriticalSection enter(m_section);
 			if (IsEPG_PID(pid))
 				m_epgParser.OnTsPacket(m_header,tsPacket);
 			else

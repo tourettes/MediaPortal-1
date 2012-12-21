@@ -63,14 +63,16 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 
 		time_t currentTime=time(NULL);
 		time_t timespan=currentTime-m_epgTimeout;
+		
 		if (timespan>60)
 		{
 			m_bParseEPG=false;
 			m_bEpgDone=true;
 			return S_FINISHED;
 		}
+
 		if (len<=14) 
-      return E_FAIL;
+         return E_FAIL;
 
 		int tableid = buf[0];
 		//Dish Network also uses table ids from 0x80 to 0xfe. We don't need to check this here either because 
@@ -95,6 +97,7 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 		key+=(lTransport_id<<16);
 		key+=lServiceId;
 		imapEPG it=m_mapEPG.find(key);
+		
 		if (it==m_mapEPG.end())
 		{
 			EPGChannel newChannel ;
@@ -105,22 +108,36 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 			m_mapEPG[key]=newChannel;
 			it=m_mapEPG.find(key);
 		}	
+		
 		if (it==m_mapEPG.end()) 
 			return E_FAIL;
+		
 		EPGChannel& channel=it->second; 
-
+		int sectionKey;
 		//did we already receive this section ?
-		int sectionKey=crc32 ((char*)buf,len);
+		try
+		{
+		sectionKey=crc32 ((char*)buf,len);
+		}
+		catch(...)
+		{
+			LogDebug("Error CRC check");
+			return E_FAIL;
+		}
+
 		EPGChannel::imapSectionsReceived itSec=channel.mapSectionsReceived.find(sectionKey);
 		if (itSec!=channel.mapSectionsReceived.end())
 			return S_FINISHED; //yes
 		channel.mapSectionsReceived[sectionKey]=true;
 		
-
 		m_epgTimeout=time(NULL);
 		int start=14;
+		int loopcatcher=0;
+		int loopcatcher2=0;
+
 		while (start+11 <= len+1)
 		{
+			loopcatcher+=1;
 			unsigned int event_id=(buf[start]<<8)+buf[start+1];
 			unsigned long dateMJD=(buf[start+2]<<8)+buf[start+3];
 			unsigned long timeUTC=(buf[start+4]<<16)+(buf[start+5]<<8)+buf[6];
@@ -128,7 +145,6 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 			unsigned int running_status=buf[start+10]>>5;
 			unsigned int free_CA_mode=(buf[start+10]>>4) & 0x1;
 			int descriptors_len=((buf[start+10]&0xf)<<8) + buf[start+11];
-
 			EPGChannel::imapEvents itEvent=channel.mapEvents.find(event_id);
 			if (itEvent==channel.mapEvents.end())
 			{
@@ -142,14 +158,15 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 				channel.mapEvents[event_id]=newEvent;
 				itEvent=channel.mapEvents.find(event_id);
 			}
-			EPGEvent& epgEvent=itEvent->second;
 
+			EPGEvent& epgEvent=itEvent->second;
 			start=start+12;
 			int off=0;
 			while (off < descriptors_len)
 			{
+				loopcatcher2+=1;
 				if (start+off+1>len) 
-          return  E_FAIL;
+                  return  E_FAIL;
 				int descriptor_tag = buf[start+off];
 				int descriptor_len = buf[start+off+1];
 				if (descriptor_len>0) 
@@ -206,8 +223,18 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 
 				}
 				off   +=descriptor_len+2;
+			if(loopcatcher2>100)
+			{
+				LogDebug("Error in EPG decoder, looper2 caught more than 100 times");
+				return E_FAIL;
+			}
 			}
 			start +=descriptors_len;
+			if(loopcatcher>100)
+			{
+					LogDebug("Error in EPG decoder, looper caught more than 100 times");
+				return E_FAIL;
+			}
 		}
 
 	}
@@ -215,6 +242,7 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 	{
 		LogDebug("mpsaa: unhandled exception in Sections::DecodeEPG()");
 	}	
+
 	return S_OK;
 }
 

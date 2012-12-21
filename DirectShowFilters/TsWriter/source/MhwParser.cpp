@@ -88,7 +88,8 @@ void CMhwParser::AbortGrabbing()
 
 void CMhwParser::OnTsPacket(CTsHeader& header,byte* tsPacket)
 {
-	if (m_bGrabbing==false) return;
+  if (m_bGrabbing==false) return;
+  
   int pid=((tsPacket[1] & 0x1F) <<8)+tsPacket[2];
   if (pid!=PID_MHW1 && pid!=PID_MHW2) return;
 
