@@ -480,14 +480,24 @@ static bool OpenSubRipper(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet
         WCHAR sep;
         int num = 0; // This one isn't really used just assigned a new value
         int hh1, mm1, ss1, ms1, hh2, mm2, ss2, ms2;
-        int c = swscanf_s(buff, L"%d%c%d%c%d%c%d --> %d%c%d%c%d%c%d\n",
+        WCHAR msStr1[5] = {0}, msStr2[5] = {0};
+        int c = swscanf_s(buff, L"%d%c%d%c%d%4[^-] --> %d%c%d%c%d%4s\n",
                           &hh1, &sep, sizeof(WCHAR), &mm1, &sep, sizeof(WCHAR),
-                          &ss1, &sep, sizeof(WCHAR), &ms1, &hh2, &sep, sizeof(WCHAR),
-                          &mm2, &sep, sizeof(WCHAR), &ss2, &sep, sizeof(WCHAR), &ms2);
+                          &ss1, msStr1, _countof(msStr1),
+                          &hh2, &sep, sizeof(WCHAR), &mm2, &sep, sizeof(WCHAR),
+                          &ss2, msStr2, _countof(msStr2));
 
         if (c == 1) { // numbering
             num = hh1;
-        } else if (c == 14) { // time info
+        } else if (c >= 11) { // time info
+            // Parse ms if present
+            if (2 != swscanf_s(msStr1, L"%c%d", &sep, sizeof(WCHAR), &ms1)) {
+                ms1 = 0;
+            }
+            if (2 != swscanf_s(msStr2, L"%c%d", &sep, sizeof(WCHAR), &ms2)) {
+                ms2 = 0;
+            }
+
             CStringW str, tmp;
 
             bool fFoundEmpty = false;
@@ -1005,7 +1015,7 @@ static CStringW SMI2SSA(CStringW str, int CharSet)
         // Modified by Cookie Monster
         if (lstr.Find(L"<font ", k) == k) {
             CStringW args = lstr.Mid(k + 6, l - 6); // delete "<font "
-            CStringW arg ;
+            CStringW arg;
 
             args.Remove('\"');
             args.Remove('#');   // may include 2 * " + #
@@ -1738,20 +1748,15 @@ static bool OpenUSF(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
     return false;
 }
 
-static CStringW MPL22SSA(CStringW str)
+static CStringW MPL22SSA(CStringW str, bool fUnicode, int CharSet)
 {
-    CAtlList<CStringW> sl;
-    Explode(str, sl, '|');
-    POSITION pos = sl.GetHeadPosition();
-    while (pos) {
-        CStringW& s = sl.GetNext(pos);
-        if (s[0] == '/') {
-            s = L"{\\i1}" + s.Mid(1) + L"{\\i0}";
-        }
+    // Convert MPL2 italic tags to MicroDVD italic tags
+    if (str[0] == L'/') {
+        str = L"{y:i}" + str.Mid(1);
     }
-    str = Implode(sl, '\n');
-    str.Replace(L"\n", L"\\N");
-    return str;
+    str.Replace(L"|/", L"|{y:i}");
+
+    return MicroDVD2SSA(str, fUnicode, CharSet);
 }
 
 static bool OpenMPL2(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
@@ -1768,7 +1773,7 @@ static bool OpenMPL2(CTextFile* file, CSimpleTextSubtitle& ret, int CharSet)
 
         if (c == 2) {
             ret.Add(
-                MPL22SSA(buff.Mid(buff.Find(']', buff.Find(']') + 1) + 1)),
+                MPL22SSA(buff.Mid(buff.Find(']', buff.Find(']') + 1) + 1), file->IsUnicode(), CharSet),
                 file->IsUnicode(),
                 start * 100, end * 100);
         } else if (c != EOF) { // might be another format
@@ -2657,7 +2662,7 @@ bool CSimpleTextSubtitle::Open(BYTE* data, int len, int CharSet, CString name)
     return fRet;
 }
 
-bool CSimpleTextSubtitle::SaveAs(CString fn, exttype et, double fps, CTextFile::enc e)
+bool CSimpleTextSubtitle::SaveAs(CString fn, exttype et, double fps, int delay, CTextFile::enc e)
 {
     if (fn.Mid(fn.ReverseFind('.') + 1).CompareNoCase(exttypestr[et])) {
         if (fn[fn.GetLength() - 1] != '.') {
@@ -2783,16 +2788,20 @@ bool CSimpleTextSubtitle::SaveAs(CString fn, exttype et, double fps, CTextFile::
         L"";
     //  Sort(true);
 
+    if (m_mode == FRAME) {
+        delay = int(delay * fps / 1000);
+    }
+
     for (int i = 0, j = (int)GetCount(), k = 0; i < j; i++) {
         STSEntry& stse = GetAt(i);
 
-        int t1 = TranslateStart(i, fps);
+        int t1 = TranslateStart(i, fps) + delay;
         if (t1 < 0) {
             k++;
             continue;
         }
 
-        int t2 = TranslateEnd(i, fps);
+        int t2 = TranslateEnd(i, fps) + delay;
 
         int hh1 = (t1 / 60 / 60 / 1000);
         int mm1 = (t1 / 60 / 1000) % 60;
