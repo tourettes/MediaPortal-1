@@ -560,7 +560,7 @@ STDMETHODIMP CMpTs::DeleteChannel( int handle)
 
 CTsChannel* CMpTs::GetTsChannel(int handle)
 {
-  CAutoLock lock(&m_Lock);
+    CAutoLock lock(&m_Lock);
 	ivecChannels it = m_vecChannels.begin();
 	while (it != m_vecChannels.end())
 	{
@@ -588,6 +588,7 @@ STDMETHODIMP CMpTs::DeleteAllChannels()
 
 STDMETHODIMP CMpTs::AnalyzerSetVideoPid(int handle, int videoPid)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->SetVideoPid(  videoPid);
@@ -595,6 +596,7 @@ STDMETHODIMP CMpTs::AnalyzerSetVideoPid(int handle, int videoPid)
 
 STDMETHODIMP CMpTs::AnalyzerGetVideoPid(int handle,  int* videoPid)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->GetVideoPid(  videoPid);
@@ -602,6 +604,7 @@ STDMETHODIMP CMpTs::AnalyzerGetVideoPid(int handle,  int* videoPid)
 
 STDMETHODIMP CMpTs::AnalyzerSetAudioPid(int handle,  int audioPid)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->SetAudioPid(  audioPid);
@@ -616,6 +619,7 @@ STDMETHODIMP CMpTs::AnalyzerGetAudioPid(int handle,  int* audioPid)
 
 STDMETHODIMP CMpTs::AnalyzerIsVideoEncrypted(int handle,  int* yesNo)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->IsVideoEncrypted(  yesNo);
@@ -623,6 +627,7 @@ STDMETHODIMP CMpTs::AnalyzerIsVideoEncrypted(int handle,  int* yesNo)
 
 STDMETHODIMP CMpTs::AnalyzerIsAudioEncrypted(int handle,  int* yesNo)
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->IsAudioEncrypted(  yesNo);
@@ -630,6 +635,7 @@ STDMETHODIMP CMpTs::AnalyzerIsAudioEncrypted(int handle,  int* yesNo)
 
 STDMETHODIMP CMpTs::AnalyzerReset(int handle )
 {
+  CAutoLock lock(&m_Lock); 
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pVideoAnalyzer->Reset(  );
@@ -637,6 +643,7 @@ STDMETHODIMP CMpTs::AnalyzerReset(int handle )
 
 STDMETHODIMP CMpTs::PmtSetPmtPid(int handle,int pmtPid, long serviceId)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pPmtGrabber->SetPmtPid(pmtPid,serviceId  );
@@ -644,6 +651,7 @@ STDMETHODIMP CMpTs::PmtSetPmtPid(int handle,int pmtPid, long serviceId)
 
 STDMETHODIMP CMpTs::PmtSetCallBack(int handle,IPMTCallback* callback)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pPmtGrabber->SetCallBack(callback);
@@ -651,6 +659,7 @@ STDMETHODIMP CMpTs::PmtSetCallBack(int handle,IPMTCallback* callback)
 
 STDMETHODIMP CMpTs::PmtGetPMTData (int handle,BYTE *pmtData)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pPmtGrabber->GetPMTData (pmtData);
@@ -666,6 +675,7 @@ STDMETHODIMP CMpTs::RecordSetRecordingFileNameW( int handle, wchar_t* pwszFileNa
 
 STDMETHODIMP CMpTs::RecordStartRecord( int handle)
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	if (pChannel->m_pRecorder->Start())
@@ -676,6 +686,7 @@ STDMETHODIMP CMpTs::RecordStartRecord( int handle)
 
 STDMETHODIMP CMpTs::RecordStopRecord( int handle)
 {
+  CAutoLock lock(&m_Lock); 
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pRecorder->Stop(  );
@@ -684,6 +695,7 @@ STDMETHODIMP CMpTs::RecordStopRecord( int handle)
 
 STDMETHODIMP CMpTs::RecordSetPmtPid(int handle,int mtPid, int serviceId,byte* pmtData,int pmtLength )
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pRecorder->SetPmtPid( mtPid, serviceId,pmtData,pmtLength );
@@ -692,6 +704,7 @@ STDMETHODIMP CMpTs::RecordSetPmtPid(int handle,int mtPid, int serviceId,byte* pm
 
 STDMETHODIMP CMpTs::TimeShiftSetTimeShiftingFileNameW( int handle, wchar_t* pwszFileName)
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 
@@ -711,6 +724,7 @@ STDMETHODIMP CMpTs::TimeShiftSetTimeShiftingFileNameW( int handle, wchar_t* pwsz
 }
 STDMETHODIMP CMpTs::TimeShiftStart( int handle )
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
   if (b_dumpRawPakets)
@@ -726,6 +740,7 @@ STDMETHODIMP CMpTs::TimeShiftStart( int handle )
 
 STDMETHODIMP CMpTs::TimeShiftStop( int handle )
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
   if (b_dumpRawPakets)
@@ -739,6 +754,7 @@ STDMETHODIMP CMpTs::TimeShiftStop( int handle )
 
 STDMETHODIMP CMpTs:: TimeShiftReset( int handle )
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
   if (b_dumpRawPakets)
@@ -753,6 +769,7 @@ STDMETHODIMP CMpTs:: TimeShiftReset( int handle )
 
 STDMETHODIMP CMpTs:: TimeShiftGetBufferSize( int handle, long * size) 
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pTimeShifting->GetBufferSize( size);
@@ -761,6 +778,7 @@ STDMETHODIMP CMpTs:: TimeShiftGetBufferSize( int handle, long * size)
 
 STDMETHODIMP CMpTs:: TimeShiftSetPmtPid( int handle, int pmtPid, int serviceId,byte* pmtData,int pmtLength) 
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pTimeShifting->SetPmtPid( pmtPid,serviceId,pmtData,pmtLength);
@@ -769,6 +787,7 @@ STDMETHODIMP CMpTs:: TimeShiftSetPmtPid( int handle, int pmtPid, int serviceId,b
 
 STDMETHODIMP CMpTs:: TimeShiftPause( int handle, BYTE onOff) 
 {
+   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pTimeShifting->Pause( onOff);
@@ -777,7 +796,8 @@ STDMETHODIMP CMpTs:: TimeShiftPause( int handle, BYTE onOff)
 
 STDMETHODIMP CMpTs::TimeShiftSetParams(int handle, int minFiles, int maxFiles, ULONG chunkSize) 
 {
-  CTsChannel* pChannel=GetTsChannel(handle);
+	   CAutoLock lock(&m_Lock);
+	CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
   pChannel->m_pTimeShifting->SetMinTSFiles(minFiles);
   pChannel->m_pTimeShifting->SetMaxTSFiles(maxFiles);
@@ -788,6 +808,7 @@ STDMETHODIMP CMpTs::TimeShiftSetParams(int handle, int minFiles, int maxFiles, U
 
 STDMETHODIMP CMpTs::TimeShiftGetCurrentFilePosition(int handle,__int64 * position,long * bufferId)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pTimeShifting->GetTimeShiftPosition(position,bufferId);
@@ -796,6 +817,7 @@ STDMETHODIMP CMpTs::TimeShiftGetCurrentFilePosition(int handle,__int64 * positio
 
 STDMETHODIMP CMpTs::SetVideoAudioObserver(int handle, IVideoAudioObserver* callback)
 {
+     CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_FALSE;
   pChannel->m_pTimeShifting->SetVideoAudioObserver(callback);
@@ -804,6 +826,7 @@ STDMETHODIMP CMpTs::SetVideoAudioObserver(int handle, IVideoAudioObserver* callb
 
 STDMETHODIMP CMpTs::RecordSetVideoAudioObserver(int handle, IVideoAudioObserver* callback)
 {
+     CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_FALSE;
   pChannel->m_pRecorder->SetVideoAudioObserver(callback);
@@ -812,6 +835,7 @@ STDMETHODIMP CMpTs::RecordSetVideoAudioObserver(int handle, IVideoAudioObserver*
 
 STDMETHODIMP CMpTs::TTxStart( int handle)
 {
+     CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pTeletextGrabber->Start( );
@@ -819,6 +843,7 @@ STDMETHODIMP CMpTs::TTxStart( int handle)
 
 STDMETHODIMP CMpTs::TTxStop( int handle )
 {
+     CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pTeletextGrabber->Stop( );
@@ -826,6 +851,7 @@ STDMETHODIMP CMpTs::TTxStop( int handle )
 
 STDMETHODIMP CMpTs::TTxSetTeletextPid( int handle,int teletextPid)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pTeletextGrabber->SetTeletextPid(teletextPid );
@@ -833,6 +859,7 @@ STDMETHODIMP CMpTs::TTxSetTeletextPid( int handle,int teletextPid)
 
 STDMETHODIMP CMpTs::TTxSetCallBack( int handle,ITeletextCallBack* callback)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pTeletextGrabber->SetCallBack(callback );
@@ -840,6 +867,7 @@ STDMETHODIMP CMpTs::TTxSetCallBack( int handle,ITeletextCallBack* callback)
 
 STDMETHODIMP CMpTs::CaSetCallBack(int handle,ICACallback* callback)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pCaGrabber->SetCallBack(callback );
@@ -847,6 +875,7 @@ STDMETHODIMP CMpTs::CaSetCallBack(int handle,ICACallback* callback)
 
 STDMETHODIMP CMpTs::CaGetCaData(int handle,BYTE *caData)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pCaGrabber->GetCaData(caData );
@@ -854,6 +883,7 @@ STDMETHODIMP CMpTs::CaGetCaData(int handle,BYTE *caData)
 
 STDMETHODIMP CMpTs::CaReset(int handle)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	return pChannel->m_pCaGrabber->Reset( );
@@ -862,7 +892,8 @@ STDMETHODIMP CMpTs::CaReset(int handle)
 STDMETHODIMP CMpTs::GetStreamQualityCounters(int handle, int* totalTsBytes, int* totalRecordingBytes, 
       int* TsDiscontinuity, int* recordingDiscontinuity)
 {
-  CTsChannel* pChannel=GetTsChannel(handle);
+     CAutoLock lock(&m_Lock);
+	CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_FALSE;
 
   if (pChannel->m_pTimeShifting)
@@ -886,6 +917,7 @@ STDMETHODIMP CMpTs::GetStreamQualityCounters(int handle, int* totalTsBytes, int*
 
 STDMETHODIMP CMpTs::TimeShiftSetChannelType(int handle, int channelType)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	pChannel->m_pRecorder->SetChannelType(channelType);
