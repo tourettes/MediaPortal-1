@@ -44,6 +44,7 @@ CEpgScanner::~CEpgScanner(void)
 
 STDMETHODIMP CEpgScanner::SetCallBack(IEpgCallback* callback)
 {
+	CEnterCriticalSection enter(m_section);
 	LogDebug("epg: set callback");
     m_pCallBack=callback;
 	return S_OK;
@@ -55,7 +56,7 @@ STDMETHODIMP CEpgScanner::Reset()
 	LogDebug("epg: reset");
 	m_bGrabbing=false;
 	m_epgParser.Reset();
-  m_mhwParser.Reset();
+    m_mhwParser.Reset();
 	return S_OK;
 }
 
@@ -89,6 +90,7 @@ STDMETHODIMP CEpgScanner::GrabEPG()
 	}
 	return S_OK;
 }
+
 STDMETHODIMP CEpgScanner::IsEPGReady(BOOL* yesNo)
 {
 	CEnterCriticalSection enter(m_section);
@@ -107,7 +109,6 @@ STDMETHODIMP CEpgScanner::GetEPGChannelCount( ULONG* channelCount)
 	CEnterCriticalSection enter(m_section);
 	try
 	{
-		//LogDebug("EpgScanner::GetEPGChannelCount");
 		*channelCount=m_epgParser.GetEPGChannelCount( );
 	}
 	catch(...)
@@ -212,7 +213,7 @@ STDMETHODIMP CEpgScanner::GetMHWTitleCount(UINT* count)
 	try
 	{
 		m_mhwParser.GetTitleCount(count);
-    LogDebug("EpgScanner::GetMHWTitleCount:%d" ,(*count));
+        LogDebug("EpgScanner::GetMHWTitleCount:%d" ,(*count));
 	}
 	catch(...)
 	{
@@ -225,7 +226,6 @@ STDMETHODIMP CEpgScanner::GetMHWTitle(UINT program, UINT* id, UINT* transportId,
 	CEnterCriticalSection enter(m_section);
 	try
 	{
-		//LogDebug("EpgScanner::GetMHWTitle");
 		m_mhwParser.GetTitle(program, id, transportId, networkId, channelId, programId, themeId, PPV, Summaries, duration, dateStart,timeStart,title,programName);
 	}
 	catch(...)
@@ -239,7 +239,6 @@ STDMETHODIMP CEpgScanner::GetMHWChannel(UINT channelNr, UINT* channelId,UINT* ne
 	CEnterCriticalSection enter(m_section);
 	try
 	{
-		//LogDebug("EpgScanner::GetMHWChannel");
 		m_mhwParser.GetChannel(channelNr,channelId, networkId, transportId, channelName);
 	}
 	catch(...)
@@ -253,7 +252,6 @@ STDMETHODIMP CEpgScanner::GetMHWSummary(ULONG programId, char** summary)
 	CEnterCriticalSection enter(m_section);
 	try
 	{
-		//LogDebug("EpgScanner::GetMHWSummary");
 		m_mhwParser.GetSummary(programId, summary);
 	}
 	catch(...)
@@ -264,10 +262,10 @@ STDMETHODIMP CEpgScanner::GetMHWSummary(ULONG programId, char** summary)
 }
 STDMETHODIMP CEpgScanner::GetMHWTheme(UINT themeId, char** theme)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		CEnterCriticalSection enter(m_section);
-		//LogDebug("EpgScanner::GetMHWTheme");
 		m_mhwParser.GetTheme(themeId, theme);
 	}
 	catch(...)

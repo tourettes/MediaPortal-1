@@ -113,7 +113,7 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 			return E_FAIL;
 		
 		EPGChannel& channel=it->second; 
-		int sectionKey;
+		DWORD sectionKey;
 		//did we already receive this section ?
 		try
 		{
@@ -128,16 +128,11 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 		EPGChannel::imapSectionsReceived itSec=channel.mapSectionsReceived.find(sectionKey);
 		if (itSec!=channel.mapSectionsReceived.end())
 			return S_FINISHED; //yes
-		channel.mapSectionsReceived[sectionKey]=true;
-		
+		channel.mapSectionsReceived[sectionKey]=true;	
 		m_epgTimeout=time(NULL);
 		int start=14;
-		int loopcatcher=0;
-		int loopcatcher2=0;
-
 		while (start+11 <= len+1)
 		{
-			loopcatcher+=1;
 			unsigned int event_id=(buf[start]<<8)+buf[start+1];
 			unsigned long dateMJD=(buf[start+2]<<8)+buf[start+3];
 			unsigned long timeUTC=(buf[start+4]<<16)+(buf[start+5]<<8)+buf[6];
@@ -164,7 +159,6 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 			int off=0;
 			while (off < descriptors_len)
 			{
-				loopcatcher2+=1;
 				if (start+off+1>len) 
                   return  E_FAIL;
 				int descriptor_tag = buf[start+off];
@@ -223,26 +217,14 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 
 				}
 				off   +=descriptor_len+2;
-			if(loopcatcher2>100)
-			{
-				LogDebug("Error in EPG decoder, looper2 caught more than 100 times");
-				return E_FAIL;
-			}
 			}
 			start +=descriptors_len;
-			if(loopcatcher>100)
-			{
-					LogDebug("Error in EPG decoder, looper caught more than 100 times");
-				return E_FAIL;
-			}
 		}
-
 	}
 	catch(...)
 	{
 		LogDebug("mpsaa: unhandled exception in Sections::DecodeEPG()");
 	}	
-
 	return S_OK;
 }
 
@@ -1155,7 +1137,7 @@ void CEpgDecoder::ResetEPG()
 	m_prevEventIndex=-1;
 
 	m_mapEPG.clear();
-	//m_bParseEPG=false;
+	m_bParseEPG=false;
 	m_bEpgDone=false;
     m_bSorted=false;
 	m_epgTimeout=time(NULL);
@@ -1176,7 +1158,7 @@ void CEpgDecoder::GrabEPG()
 	m_mapEPG.clear();
 	m_bParseEPG=true;
 	m_bEpgDone=false;
-  m_bSorted=false;
+    m_bSorted=false;
     m_pseudo_event_id=0;
 	m_epgTimeout=time(NULL);
 }

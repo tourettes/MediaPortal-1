@@ -118,6 +118,7 @@ STDMETHODIMP CChannelLinkageScanner::GetLinkedChannel (THIS_ ULONG channelIndex,
 
 STDMETHODIMP CChannelLinkageScanner::SetCallBack(IChannelLinkageCallback* callback)
 {
+	CEnterCriticalSection enter(m_section);
 	LogDebug("ChannelLinkageScanner: set callback");
 	m_pCallBack=callback;
 	return S_OK;

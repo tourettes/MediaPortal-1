@@ -185,6 +185,7 @@ void CChannelScan::OnTsPacket(byte* tsPacket)
 
 STDMETHODIMP CChannelScan::ScanNIT()
 {
+  CEnterCriticalSection enter(m_section);
   m_nit.Reset();
   m_bIsParsingNIT=true;
   return 0;
@@ -192,12 +193,14 @@ STDMETHODIMP CChannelScan::ScanNIT()
 
 STDMETHODIMP CChannelScan::StopNIT()
 {
+  CEnterCriticalSection enter(m_section);
   m_bIsParsingNIT=false;
   return 0;
 }
 
 STDMETHODIMP CChannelScan::GetNITCount(int* transponderCount)
 {
+  CEnterCriticalSection enter(m_section);
   *transponderCount=0;
   if (m_nit.m_nit.satteliteNIT.size()>0) *transponderCount= m_nit.m_nit.satteliteNIT.size();
   else if (m_nit.m_nit.cableNIT.size()>0) *transponderCount= m_nit.m_nit.cableNIT.size();
@@ -207,6 +210,7 @@ STDMETHODIMP CChannelScan::GetNITCount(int* transponderCount)
 
 STDMETHODIMP CChannelScan::GetNITChannel(int channel,int* type,int* frequency,int *polarisation, int* modulation, int* symbolrate, int* bandwidth, int* fecInner, int* rollOff, char** networkName)
 {
+    CEnterCriticalSection enter(m_section);
 	static char sNetworkName[128];
 	strcpy(sNetworkName,"");
   *frequency=0;

@@ -646,7 +646,8 @@ STDMETHODIMP CMpTs::PmtSetPmtPid(int handle,int pmtPid, long serviceId)
   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
-	return pChannel->m_pPmtGrabber->SetPmtPid(pmtPid,serviceId  );
+    LogDebug("Setting PMT Handle: %d Pid: %d Sid: %d",pmtPid,serviceId);
+	return pChannel->m_pPmtGrabber->SetPmtPid(pmtPid,serviceId);
 }
 
 STDMETHODIMP CMpTs::PmtSetCallBack(int handle,IPMTCallback* callback)
@@ -654,6 +655,7 @@ STDMETHODIMP CMpTs::PmtSetCallBack(int handle,IPMTCallback* callback)
   CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
+    LogDebug("PMT Callback for handle: %d",handle);
 	return pChannel->m_pPmtGrabber->SetCallBack(callback);
 }
 

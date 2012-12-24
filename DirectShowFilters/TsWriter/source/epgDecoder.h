@@ -74,8 +74,8 @@ typedef struct stEPGChannel
 	typedef list<EPGEvent>::iterator ilistEvents;
 	typedef map<DWORD,EPGEvent>::iterator imapEvents;
 
-	map<int,bool> mapSectionsReceived;
-	typedef map<int,bool>::iterator imapSectionsReceived;
+	map<DWORD,bool> mapSectionsReceived;
+	typedef map<DWORD,bool>::iterator imapSectionsReceived;
 }EPGChannel;
 
 class CEpgDecoder : public CDvbUtil
