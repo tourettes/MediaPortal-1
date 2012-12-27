@@ -181,7 +181,7 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
   GetLogFile(filename);
   ::DeleteFile(filename);
   LogDebug("----- Experimental noStopMod version -----");
-  LogDebug("---------- v0.0.63b XXX -------------------");
+  LogDebug("---------- v0.0.64 XXX -------------------");
   
   m_fileReader=NULL;
   m_fileDuration=NULL;
@@ -206,6 +206,7 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
   m_bDisableVidSizeRebuildMPEG2 = false;
   m_bDisableVidSizeRebuildH264 = false;
   m_bDisableAddPMT = false;
+  m_bForceFFDShowSyncFix = false;
   if (ERROR_SUCCESS==RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Team MediaPortal\\TsReader", 0, NULL, 
                                     REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, NULL))
   {
@@ -234,6 +235,15 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
     {
       LogDebug("----- DisableAddPMT -----");
       m_bDisableAddPMT = true;
+    }
+
+    keyValue = 0;
+    LPCTSTR forceFFDShowSyncFix_RRK = TEXT("ForceFFDShowSyncFix");
+    ReadRegistryKeyDword(key, forceFFDShowSyncFix_RRK, keyValue);
+    if (keyValue)
+    {
+      LogDebug("----- ForceFFDShowSyncFix -----");
+      m_bForceFFDShowSyncFix = true;
     }
     
     RegCloseKey(key);

@@ -203,6 +203,14 @@ HRESULT CVideoPin::CompleteConnect(IPin *pReceivePin)
   m_bPinNoNewSegFlush = false;
   m_bPinNoAddPMT = false;
   m_bAddPMT = true;
+  if (m_pTsReaderFilter->m_bForceFFDShowSyncFix)
+  {
+    m_pTsReaderFilter->m_bFastSyncFFDShow = true;
+  }
+  else
+  {
+    m_pTsReaderFilter->m_bFastSyncFFDShow = false;
+  }
   HRESULT hr = CBaseOutputPin::CompleteConnect(pReceivePin);
   if (!SUCCEEDED(hr)) return E_FAIL;
 
@@ -223,9 +231,7 @@ HRESULT CVideoPin::CompleteConnect(IPin *pReceivePin)
     LogDebug("vidPin:CompleteConnect() ok, filter: %s", szName);
     
     m_bConnected=true;
-    
-    m_pTsReaderFilter->m_bFastSyncFFDShow = false;
-    
+        
     CLSID &ref=m_pTsReaderFilter->GetCLSIDFromPin(pReceivePin);
     m_pTsReaderFilter->m_videoDecoderCLSID = ref;
     if (m_pTsReaderFilter->m_videoDecoderCLSID == CLSID_FFDSHOWVIDEO)
@@ -243,6 +249,7 @@ HRESULT CVideoPin::CompleteConnect(IPin *pReceivePin)
       m_bPinNoNewSegFlush = true;
       //LogDebug("vidPin:CompleteConnect() MS DTV-DVD Video Decoder connected, disable NewSegFlush");
     }
+    
   }
   else
   {

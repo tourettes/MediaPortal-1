@@ -261,6 +261,7 @@ public:
   bool            m_bDisableVidSizeRebuildMPEG2;
   bool            m_bDisableVidSizeRebuildH264;
   bool            m_bDisableAddPMT;
+  bool            m_bForceFFDShowSyncFix;
 
   CLSID           GetCLSIDFromPin(IPin* pPin);
   HRESULT         GetSubInfoFromPin(IPin* pPin);
