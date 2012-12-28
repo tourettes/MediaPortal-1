@@ -260,15 +260,15 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Sections\BDPostProcessing.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="TvServerRemote.cs" />
-    <Compile Include="Sections\BD.cs">
+    <Compile Include="Sections\BDZoom.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Sections\BDCodec.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Sections\BDCodec.designer.cs">
-      <DependentUpon>BDCodec.cs</DependentUpon>
+    <Compile Include="Sections\BDZoom.designer.cs">
+      <DependentUpon>BDZoom.cs</DependentUpon>
     </Compile>
     <Compile Include="RegistryUtilities.cs">
       <SubType>UserControl</SubType>
@@ -278,6 +278,15 @@
     </Compile>
     <Compile Include="Sections\FiltersPowerDVDDecoder10.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sections\BD.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sections\BDCodec.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sections\BDCodec.Designer.cs">
+      <DependentUpon>BDCodec.cs</DependentUpon>
     </Compile>
     <Compile Include="SettingsUpgradeManager.cs" />
     <Compile Include="HelpSystem.cs" />
@@ -680,11 +689,8 @@
       <SubType>Designer</SubType>
       <DependentUpon>BaseViews.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Sections\BD.resx">
-      <DependentUpon>BD.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Sections\BDCodec.resx">
-      <DependentUpon>BDCodec.cs</DependentUpon>
+    <EmbeddedResource Include="Sections\BDZoom.resx">
+      <DependentUpon>BDZoom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Sections\FiltersPowerDVDAudioDecoder.resx">
       <DependentUpon>FiltersPowerDVDAudioDecoder.cs</DependentUpon>
@@ -692,6 +698,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sections\FiltersPowerDVDDecoder10.resx">
       <DependentUpon>FiltersPowerDVDDecoder10.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sections\BD.resx">
+      <DependentUpon>BD.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sections\BDCodec.resx">
+      <DependentUpon>BDCodec.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Sections\GeneralStartupResume.resx">
       <DependentUpon>GeneralStartupResume.cs</DependentUpon>

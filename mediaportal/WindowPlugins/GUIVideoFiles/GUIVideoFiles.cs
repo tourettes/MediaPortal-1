@@ -168,6 +168,10 @@ namespace MediaPortal.GUI.Video
     private int _resetCount;
     private string _selectedFilename = string.Empty;
 
+    //Internal BDInternalMenu
+    private static bool _BDInternalMenu = true;
+    private static bool _BDDetect = false;
+
     private bool _useSortTitle = false;
     private bool _useOnlyNfoScraper = false;
     private bool _doNotUseDatabase = false;
@@ -313,7 +317,8 @@ namespace MediaPortal.GUI.Video
         _howToPlayAll = xmlreader.GetValueAsInt("movies", "playallinfolder", 3);
         _watchedPercentage = xmlreader.GetValueAsInt("movies", "playedpercentagewatched", 95);
         _videoInfoInShare = xmlreader.GetValueAsBool("moviedatabase", "movieinfoshareview", false);
-        
+        _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDMenu", true);
+
         _virtualDirectory = VirtualDirectories.Instance.Movies;
 		    // External player
         _useInternalVideoPlayer = xmlreader.GetValueAsBool("movieplayer", "internal", true);
@@ -1640,6 +1645,7 @@ namespace MediaPortal.GUI.Video
 
     public static void PlayMovieFromPlayList(bool askForResumeMovie, int iMovieIndex, bool requestPin)
     {
+      _BDDetect = false;
       string filename;
       if (iMovieIndex == -1)
       {
@@ -1676,13 +1682,23 @@ namespace MediaPortal.GUI.Video
         }
       }
 
+      //Resume BD only for Title mode
+      if (filename.EndsWith(@"\BDMV\index.bdmv"))
+      {
+        _BDDetect = true;
+      }
+
       int timeMovieStopped = 0;
       byte[] resumeData = null;
-      
 
       // Skip resume for external player and BluRays (not implemented yet in BDLIB)
-      if (!CheckExternalPlayer(filename, isImage) && !filename.ToUpperInvariant().Contains("INDEX.BDMV"))
+      if (!CheckExternalPlayer(filename, isImage))
       {
+        // Check if we play image file to search db with the proper filename
+        if (Util.Utils.IsISOImage(filename))
+        {
+          filename = DaemonTools.MountedIsoFile;
+        }
         IMDBMovie movieDetails = new IMDBMovie();
         VideoDatabase.GetMovieInfo(filename, ref movieDetails);
         int idFile = VideoDatabase.GetFileId(filename);
@@ -1737,7 +1753,7 @@ namespace MediaPortal.GUI.Video
 
       if (g_Player.Playing && timeMovieStopped > 0)
       {
-        if (g_Player.IsDVD)
+        if (g_Player.IsDVD && !_BDDetect)
         {
           g_Player.Player.SetResumeState(resumeData);
         }
@@ -2571,18 +2587,18 @@ namespace MediaPortal.GUI.Video
             {
               if (selectDvdHandler.IsDvdDirectory(item.Path))
               {
-                item.Label2 = MediaTypes.DVD.ToString();
+                item.Label2 = MediaTypes.DVD.ToString() + " " + percentWatched + "% #" + timesWatched;
                 item.Label3 = string.Empty;
               }
               else
               {
-                item.Label2 = MediaTypes.BD.ToString();
+                item.Label2 = MediaTypes.BD.ToString() + " " + percentWatched + "% #" + timesWatched;
                 item.Label3 = string.Empty;
               }
             }
             else if (VirtualDirectory.IsImageFile(Path.GetExtension(item.Path)))
             {
-              item.Label3 = MediaTypes.ISO.ToString();
+              item.Label3 = MediaTypes.ISO.ToString() + " " + percentWatched + "% #" + timesWatched;
             }
             else
             {
@@ -2694,18 +2710,18 @@ namespace MediaPortal.GUI.Video
                 {
                   if (selectDvdHandler.IsDvdDirectory(item.Path))
                   {
+                    item.Label2 = MediaTypes.DVD.ToString() + " " + percentWatched + "% #" + timesWatched;
                     item.Label3 = string.Empty;
-                    item.Label2 = MediaTypes.DVD.ToString();
                   }
                   else
                   {
+                    item.Label2 = MediaTypes.BD.ToString() + " " + percentWatched + "% #" + timesWatched;
                     item.Label3 = string.Empty;
-                    item.Label2 = MediaTypes.BD.ToString();
                   }
                 }
                 else if (VirtualDirectory.IsImageFile(Path.GetExtension(item.Path)))
                 {
-                  item.Label3 = MediaTypes.ISO.ToString();
+                  item.Label3 = MediaTypes.ISO.ToString() + " " + percentWatched + "% #" + timesWatched;
                 }
                 else
                 {
@@ -2757,16 +2773,16 @@ namespace MediaPortal.GUI.Video
               {
                 if (selectDvdHandler.IsDvdDirectory(item.Path))
                 {
-                  item.Label3 = MediaTypes.DVD.ToString();
+                  item.Label3 = MediaTypes.DVD.ToString() + " " + percentWatched + "% #" + timesWatched;
                 }
                 else
                 {
-                  item.Label3 = MediaTypes.BD.ToString();
+                  item.Label3 = MediaTypes.BD.ToString() + " " + percentWatched + "% #" + timesWatched;
                 }
               }
               else if (VirtualDirectory.IsImageFile(Path.GetExtension(item.Path)))
               {
-                item.Label3 = MediaTypes.ISO.ToString();
+                item.Label3 = MediaTypes.ISO.ToString() + " " + percentWatched + "% #" + timesWatched;
               }
               else
               {
@@ -3244,7 +3260,7 @@ namespace MediaPortal.GUI.Video
 
         if (idFile != -1)
         {
-          int videoDuration = (int)g_Player.Duration;
+          int videoDuration = (int) g_Player.Duration;
           VideoDatabase.SetVideoDuration(idFile, videoDuration);
         }
       }

@@ -195,6 +195,10 @@ void CDeMultiplexer::GetAudioStreamInfo(int stream, char* szName)
   szName[4] = m_audioStreams[stream].language[4];
   szName[5] = m_audioStreams[stream].language[5];
   szName[6] = m_audioStreams[stream].language[6];
+  szName[7] = m_audioStreams[stream].channelLanguage[0];
+  szName[8] = m_audioStreams[stream].channelLanguage[1];
+  szName[9] = m_audioStreams[stream].channelLanguage[2];
+
 }
 
 int CDeMultiplexer::GetAudioStreamCount()
@@ -233,6 +237,14 @@ int CDeMultiplexer::GetAudioStreamType(int stream)
     return 0;
   else
     return m_audioStreams[stream].audioType;
+}
+
+int CDeMultiplexer::GetAudioChannelCount(int stream)
+{
+  if (stream < 0 || stream >= (int)m_audioStreams.size())
+    return 0;
+  else
+    return m_audioStreams[stream].audioChannelCount;
 }
 
 int CDeMultiplexer::GetCurrentAudioStreamType()
@@ -1786,7 +1798,8 @@ void CDeMultiplexer::ParseAudioStreams(BLURAY_CLIP_INFO* clip)
 
       audio.audioType = clip->audio_streams[i].coding_type;
       audio.pid = clip->audio_streams[i].pid;
-			
+      audio.audioChannelCount = clip->audio_streams[i].format;
+
       if(m_filter.lib.ForceTitleBasedPlayback())
       {
         if (strncmp(audio.language, settings.audioLang, 3) == 0 && m_iAudioIdx < 0)
@@ -1796,7 +1809,13 @@ void CDeMultiplexer::ParseAudioStreams(BLURAY_CLIP_INFO* clip)
             m_iAudioIdx = i;
         }
       }
-      LogDebug("   Audio #%d:[%4d] %s %s", i, audio.pid, audio.language, StreamFormatAsString(audio.audioType));				
+
+      audio.channelLanguage[0] = StreamAudioFormatAsString(audio.audioChannelCount)[0];
+      audio.channelLanguage[1] = StreamAudioFormatAsString(audio.audioChannelCount)[1];
+      audio.channelLanguage[2] = StreamAudioFormatAsString(audio.audioChannelCount)[2];
+      audio.channelLanguage[3] = StreamAudioFormatAsString(audio.audioChannelCount)[3];
+
+      LogDebug("   Audio #%d:[%4d] %s %s %s", i, audio.pid, audio.language, StreamFormatAsString(audio.audioType), StreamAudioFormatAsString(audio.audioChannelCount));
 
       m_audioStreams.push_back(audio);
     }
@@ -1936,6 +1955,23 @@ LPCTSTR CDeMultiplexer::StreamFormatAsString(int pStreamType)
 		return _T("IG");
 	case BLURAY_STREAM_TYPE_SUB_TEXT:
 		return _T("Text");
+	default:
+		return _T("Unknown");
+	}
+}
+
+LPCTSTR CDeMultiplexer::StreamAudioFormatAsString(int pStreamAudioChannel)
+{
+	switch (pStreamAudioChannel)
+	{
+	case BLURAY_AUDIO_FORMAT_MONO:
+		return _T("1.0");
+	case BLURAY_AUDIO_FORMAT_STEREO:
+		return _T("2.0");
+	case BLURAY_AUDIO_FORMAT_MULTI_CHAN:
+		return _T("5.1");
+	case BLURAY_AUDIO_FORMAT_COMBO:
+		return _T("7.1");
 	default:
 		return _T("Unknown");
 	}

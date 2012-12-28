@@ -908,7 +908,7 @@ STDMETHODIMP CBDReaderFilter::Info(long lIndex, AM_MEDIA_TYPE**ppmt, DWORD* pdwF
     else
       *pdwFlags = 0;
   }
-  if (plcid) *plcid = 0;
+  if (plcid) *plcid = m_demultiplexer.GetAudioChannelCount((int)lIndex);//*plcid = 0;
   if (pdwGroup) *pdwGroup = m_demultiplexer.GetAudioStreamType((int)lIndex); //*pdwGroup = 1;
   if (ppObject) *ppObject = NULL;
   if (ppUnk) *ppUnk = NULL;

@@ -42,6 +42,7 @@ typedef struct bd_player_settings
   int regionCode;
   int parentalControl;
   int audioType;
+  int audioChannelCount;
   char audioLang[4];
   char menuLang[4];
   char subtitleLang[4];

@@ -101,6 +101,7 @@ namespace MediaPortal.Player
     private static double[] _jumpPoints = null;
     private static bool _autoComSkip = false;
     private static bool _loadAutoComSkipSetting = true;
+    private static bool _BDInternalMenu = false;
 
     private static string _externalPlayerExtensions = string.Empty;
 
@@ -499,6 +500,11 @@ namespace MediaPortal.Player
         Log.Info("g_Player.OnStopped()");
         if (PlayBackStopped != null)
         {
+          // Check if we play image file to search db with the proper filename
+          if (Util.Utils.IsISOImage(currentFileName))
+          {
+            currentFileName = DaemonTools.MountedIsoFile;
+          }
           PlayBackStopped(_currentMedia, (int)CurrentPosition,
                           (!String.IsNullOrEmpty(currentFileName) ? currentFileName : CurrentFile));
           currentFileName = String.Empty;
@@ -1258,6 +1264,7 @@ namespace MediaPortal.Player
           return false;
         }
 
+        bool AskForRefresh = true;
         bool playingRemoteUrl = Util.Utils.IsRemoteUrl(strFile);
         string extension = Util.Utils.GetFileExtension(strFile).ToLower();
         bool isImageFile = !playingRemoteUrl && Util.VirtualDirectory.IsImageFile(extension);
@@ -1289,11 +1296,19 @@ namespace MediaPortal.Player
             Log.Debug("g_Player.Play - Mediatype Unknown, forcing detection as Video");
             type = MediaType.Video;
           }
-
-          // Refreshrate change done here. Blu-ray player will handle the refresh rate changes by itself
-          if (strFile.ToUpper().IndexOf(@"\BDMV\INDEX.BDMV") == -1)
+          using (MediaPortal.Profile.Settings xmlreader = new MediaPortal.Profile.MPSettings())
           {
-            RefreshRateChanger.AdaptRefreshRate(strFile, (RefreshRateChanger.MediaType)(int)type);
+            _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDMenu", true);
+          }
+          if (_BDInternalMenu && extension == ".bdmv")
+            AskForRefresh = false;
+          if (AskForRefresh)
+          {
+            // Refreshrate change done here. Blu-ray player will handle the refresh rate changes by itself
+            if (strFile.ToUpper().IndexOf(@"\BDMV\INDEX.BDMV") == -1)
+            {
+              RefreshRateChanger.AdaptRefreshRate(strFile, (RefreshRateChanger.MediaType) (int) type);
+            }
           }
 
           if (RefreshRateChanger.RefreshRateChangePending)
@@ -1426,7 +1441,7 @@ namespace MediaPortal.Player
             _subs = null;
             UnableToPlay(strFile, type);
           }
-          else if (_player.Playing)
+          else if (_player != null && _player.Playing)
           {
             _isInitialized = false;
             _currentFilePlaying = _player.CurrentFile;
