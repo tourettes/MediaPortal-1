@@ -414,24 +414,75 @@ bool CDeMultiplexer::GetVideoStreamType(CMediaType &pmt)
 
     if (m_filter.m_bUseFPSfromDTSPTS)  //Use FPS derived from DTS/PTS timestamps if available, instead of from header data.
     {              
+      double minVidDiff = 0.0;
+      bool isFromDTS = false;
+      double AllowedError = 0.015; //Allow 1.5% tolerance
+      double BestVal = 0.0;
+
       if ((m_minVideoDTSdiff < 0.043) && (m_minVideoDTSdiff > 0.0163)) //Sanity check, 23.25Hz -> 61.35Hz
       {
-        ((VIDEOINFOHEADER2*)(pmt.pbFormat))->AvgTimePerFrame = (REFERENCE_TIME)(m_minVideoDTSdiff * 10000000.0); 
-        if (!m_bLogFPSfromDTSPTS) 
-        {
-          LogDebug("demux:GetVideoStreamType(), FPS from DTS = %f Hz", (1.0/m_minVideoDTSdiff));  
-        } 
-        m_bLogFPSfromDTSPTS = true;
+        minVidDiff = m_minVideoDTSdiff;
+        isFromDTS = true;
       }
       else if ((m_minVideoPTSdiff < 0.043) && (m_minVideoPTSdiff > 0.0163)) //Sanity check, 23.25Hz -> 61.35Hz
       {
-        ((VIDEOINFOHEADER2*)(pmt.pbFormat))->AvgTimePerFrame = (REFERENCE_TIME)(m_minVideoPTSdiff * 10000000.0); 
-        if (!m_bLogFPSfromDTSPTS) 
+        minVidDiff = m_minVideoPTSdiff;
+        isFromDTS = false;
+      }     
+      
+      if (minVidDiff > 0.0)
+      {
+        static double AllowedValues[] = {1000.0/60000.0, 1001.0/60000.0,
+                                         1000.0/50000.0, 
+                                         1000.0/30000.0, 1001.0/30000.0, 
+                                         1000.0/25000.0, 
+                                         1000.0/24000.0, 1001.0/24000.0};
+  	
+        double currError = AllowedError;
+        int nAllowed = sizeof(AllowedValues) / sizeof(AllowedValues[0]);
+  	      
+        // Find best match with allowed frame periods
+        for (int i = 0; i < nAllowed; ++i)
         {
-          LogDebug("demux:GetVideoStreamType(), FPS from PTS = %f Hz", (1.0/m_minVideoPTSdiff)); 
+          currError = fabs(1.0 - (minVidDiff / AllowedValues[i]));
+          if (currError < AllowedError)
+          {
+            AllowedError = currError;
+            BestVal = AllowedValues[i];
+          }
+        }
+        
+        if (BestVal > 0.0)
+        {
+          //Update PMT with new AvgTimePerFrame value          
+          if (pmt.formattype==FORMAT_VideoInfo)
+            ((VIDEOINFOHEADER*)pmt.pbFormat)->AvgTimePerFrame = (REFERENCE_TIME)(BestVal * 10000000.0);
+          else if (pmt.formattype==FORMAT_VideoInfo2)
+            ((VIDEOINFOHEADER2*)pmt.pbFormat)->AvgTimePerFrame = (REFERENCE_TIME)(BestVal * 10000000.0);
+          else if (pmt.formattype==FORMAT_MPEGVideo)
+            ((MPEG1VIDEOINFO*)pmt.pbFormat)->hdr.AvgTimePerFrame = (REFERENCE_TIME)(BestVal * 10000000.0);
+          else if (pmt.formattype==FORMAT_MPEG2Video)
+            ((MPEG2VIDEOINFO*)pmt.pbFormat)->hdr.AvgTimePerFrame = (REFERENCE_TIME)(BestVal * 10000000.0);
+
+          if (!m_bLogFPSfromDTSPTS) 
+          {
+            if (isFromDTS)
+              LogDebug("demux:GetVideoStreamType(), FPS from DTS = %f Hz (raw FPS = %f Hz, error = %f)", (1.0/BestVal), (1.0/minVidDiff), AllowedError);  
+            else
+              LogDebug("demux:GetVideoStreamType(), FPS from PTS = %f Hz (raw FPS = %f Hz, error = %f)", (1.0/BestVal), (1.0/minVidDiff), AllowedError);               
+          } 
+          m_bLogFPSfromDTSPTS = true;
         } 
-        m_bLogFPSfromDTSPTS = true;
+        else if (!m_bLogFPSfromDTSPTS) 
+        {
+          m_bLogFPSfromDTSPTS = true;
+          if (isFromDTS)
+            LogDebug("demux:GetVideoStreamType(), raw FPS from DTS = %f Hz, best match failed", (1.0/minVidDiff));  
+          else
+            LogDebug("demux:GetVideoStreamType(), raw FPS from PTS = %f Hz, best match failed", (1.0/minVidDiff));                           
+        }
       }
+     
     }
     return true;
   }
