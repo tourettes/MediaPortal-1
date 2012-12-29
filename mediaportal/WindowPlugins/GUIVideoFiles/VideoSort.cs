@@ -170,17 +170,17 @@ namespace MediaPortal.GUI.Video
           {
             if (!UseSortTitle)
             {
-              return String.Compare(item1.Label, item2.Label, true);
+              return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
             }
             else
             {
               if (movie1 != null && movie2 != null && movie1.ID > 0 && movie2.ID > 0)
               {
-                return String.Compare(movie1.SortTitle, movie2.SortTitle, true);
+                return Util.StringLogicalComparer.Compare(movie1.SortTitle, movie2.SortTitle);
               }
               else
               {
-                return String.Compare(item1.Label, item2.Label, true);
+                return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
               }
             }
           }
@@ -188,17 +188,17 @@ namespace MediaPortal.GUI.Video
           {
             if (!UseSortTitle)
             {
-              return String.Compare(item2.Label, item1.Label, true);
+              return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
             }
             else
             {
               if (movie1 != null && movie2 != null && movie1.ID > 0 && movie2.ID > 0)
               {
-                return String.Compare(movie2.SortTitle, movie1.SortTitle, true);
+                return Util.StringLogicalComparer.Compare(movie2.SortTitle, movie1.SortTitle);
               }
               else
               {
-                return String.Compare(item2.Label, item1.Label, true);
+                return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
               }
             }
           }
@@ -243,11 +243,11 @@ namespace MediaPortal.GUI.Video
         case SortMethod.Label:
           if (SortAscending)
           {
-            return String.Compare(item1.DVDLabel, item2.DVDLabel, true);
+            return Util.StringLogicalComparer.Compare(item1.DVDLabel, item2.DVDLabel);
           }
           else
           {
-            return String.Compare(item2.DVDLabel, item1.DVDLabel, true);
+            return Util.StringLogicalComparer.Compare(item2.DVDLabel, item1.DVDLabel);
           }
         case SortMethod.Size:
           if (item1.FileInfo == null || item2.FileInfo == null)
@@ -362,17 +362,17 @@ namespace MediaPortal.GUI.Video
               {
                 if (!UseSortTitle)
                 {
-                  return String.Compare(item1.Label, item2.Label, true);
+                  return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
                 }
                 else
                 {
                   if (movie1 != null && movie2 != null && movie1.ID > 0 && movie2.ID > 0)
                   {
-                    return String.Compare(movie1.SortTitle, movie2.SortTitle, true);
+                    return Util.StringLogicalComparer.Compare(movie1.SortTitle, movie2.SortTitle);
                   }
                   else
                   {
-                    return String.Compare(item1.Label, item2.Label, true);
+                    return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
                   }
                 }
               }
@@ -380,17 +380,17 @@ namespace MediaPortal.GUI.Video
               {
                 if (!UseSortTitle)
                 {
-                  return String.Compare(item2.Label, item1.Label, true);
+                  return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
                 }
                 else
                 {
                   if (movie1 != null && movie2 != null && movie1.ID > 0 && movie2.ID > 0)
                   {
-                    return String.Compare(movie2.SortTitle, movie1.SortTitle, true);
+                    return Util.StringLogicalComparer.Compare(movie2.SortTitle, movie1.SortTitle);
                   }
                   else
                   {
-                    return String.Compare(item2.Label, item1.Label, true);
+                    return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
                   }
                 }
               }
