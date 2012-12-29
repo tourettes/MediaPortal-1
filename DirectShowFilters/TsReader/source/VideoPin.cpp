@@ -248,8 +248,7 @@ HRESULT CVideoPin::CompleteConnect(IPin *pReceivePin)
     {
       m_bPinNoNewSegFlush = true;
       //LogDebug("vidPin:CompleteConnect() MS DTV-DVD Video Decoder connected, disable NewSegFlush");
-    }
-    
+    }    
   }
   else
   {

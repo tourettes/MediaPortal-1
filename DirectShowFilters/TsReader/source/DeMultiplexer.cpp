@@ -99,7 +99,9 @@ CDeMultiplexer::CDeMultiplexer(CTsDuration& duration,CTsReaderFilter& filter)
   pTeletextServiceInfoCallback = NULL;
   m_iAudioReadCount = 0;
   m_lastVideoPTS.IsValid = false;
+  m_lastVideoDTS.IsValid = false;
   m_lastAudioPTS.IsValid = false;
+  m_bLogFPSfromDTSPTS = false;
   m_bFlushDelegated = false;
   m_bFlushDelgNow = false;
   m_bFlushRunning = false; 
@@ -409,6 +411,28 @@ bool CDeMultiplexer::GetVideoStreamType(CMediaType &pmt)
   {
     CAutoLock lock (&m_mpegPesParser->m_sectionVideoPmt);
     pmt = m_mpegPesParser->pmt;
+
+    if (m_filter.m_bUseFPSfromDTSPTS)  //Use FPS derived from DTS/PTS timestamps if available, instead of from header data.
+    {              
+      if ((m_minVideoDTSdiff < 0.043) && (m_minVideoDTSdiff > 0.0163)) //Sanity check, 23.25Hz -> 61.35Hz
+      {
+        ((VIDEOINFOHEADER2*)(pmt.pbFormat))->AvgTimePerFrame = (REFERENCE_TIME)(m_minVideoDTSdiff * 10000000.0); 
+        if (!m_bLogFPSfromDTSPTS) 
+        {
+          LogDebug("demux:GetVideoStreamType(), FPS from DTS = %f Hz", (1.0/m_minVideoDTSdiff));  
+        } 
+        m_bLogFPSfromDTSPTS = true;
+      }
+      else if ((m_minVideoPTSdiff < 0.043) && (m_minVideoPTSdiff > 0.0163)) //Sanity check, 23.25Hz -> 61.35Hz
+      {
+        ((VIDEOINFOHEADER2*)(pmt.pbFormat))->AvgTimePerFrame = (REFERENCE_TIME)(m_minVideoPTSdiff * 10000000.0); 
+        if (!m_bLogFPSfromDTSPTS) 
+        {
+          LogDebug("demux:GetVideoStreamType(), FPS from PTS = %f Hz", (1.0/m_minVideoPTSdiff)); 
+        } 
+        m_bLogFPSfromDTSPTS = true;
+      }
+    }
     return true;
   }
   return false;
@@ -440,6 +464,8 @@ void CDeMultiplexer::FlushVideo()
   m_FirstVideoSample = 0x7FFFFFFF00000000LL;
   m_LastVideoSample = 0;
   m_lastVideoPTS.IsValid = false;
+  m_lastVideoDTS.IsValid = false;
+  m_bLogFPSfromDTSPTS = false;
   m_VideoValidPES = false;
   m_mVideoValidPES = false;
   m_WaitHeaderPES=-1 ;
@@ -1202,6 +1228,7 @@ void CDeMultiplexer::FillAudio(CTsHeader& header, byte* tsPacket)
             LogDebug("DeMultiplexer::FillAudio pts jump found : %f %f, %f", (float) diff, (float)pts.ToClock(), (float)m_lastAudioPTS.ToClock());
             m_lastAudioPTS.IsValid=false;
             m_lastVideoPTS.IsValid=false;
+            m_lastVideoDTS.IsValid=false;
             m_bSetAudioDiscontinuity=true;
             //Flushing is delegated to CDeMultiplexer::ThreadProc()
             m_bFlushDelegated = true;
@@ -1389,7 +1416,9 @@ void CDeMultiplexer::FillVideoH264(CTsHeader& header, byte* tsPacket)
     m_lastStart = 0;
     m_isNewNALUTimestamp = false;
     m_minVideoPTSdiff = DBL_MAX;
+    m_minVideoDTSdiff = DBL_MAX;
     m_bVideoPTSroff = false;
+    m_bLogFPSfromDTSPTS = false;
     //LogDebug("DeMultiplexer::FillVideoH264 New m_p");
   }
 
@@ -1483,12 +1512,22 @@ void CDeMultiplexer::FillVideoH264(CTsHeader& header, byte* tsPacket)
             diff=m_lastVideoPTS.ToClock()-pts.ToClock();
           else
             diff=pts.ToClock()-m_lastVideoPTS.ToClock();
+
+          double diffDTS;
+          if (!m_lastVideoDTS.IsValid)
+            m_lastVideoDTS=dts;
+          if (m_lastVideoDTS>dts)
+            diffDTS=m_lastVideoDTS.ToClock()-dts.ToClock();
+          else
+            diffDTS=dts.ToClock()-m_lastVideoDTS.ToClock();
+
           if (diff>2.0)
           {
             //Large PTS jump - flush the world...
             LogDebug("DeMultiplexer::FillVideoH264 pts jump found : %f %f, %f", (float) diff, (float)pts.ToClock(), (float)m_lastVideoPTS.ToClock());
             m_lastAudioPTS.IsValid=false;
             m_lastVideoPTS.IsValid=false;
+            m_lastVideoDTS.IsValid=false;
             //Flushing is delegated to CDeMultiplexer::ThreadProc()
             m_bFlushDelegated = true;
             WakeThread();
@@ -1500,6 +1539,13 @@ void CDeMultiplexer::FillVideoH264(CTsHeader& header, byte* tsPacket)
             {
               m_minVideoPTSdiff = diff;
             }
+            
+            m_lastVideoDTS=dts;
+            if ((diffDTS < m_minVideoDTSdiff) && (diffDTS > 0.005))
+            {
+              m_minVideoDTSdiff = diffDTS;
+            }
+
             if ((diff < 0.002) && (pts.IsValid) && !m_fHasAccessUnitDelimiters)
             {
               LOG_SAMPLES("DeMultiplexer::FillVideoH264 - PTS is same, diff %f, pts %f ", (float)diff, (float)pts.ToClock());
@@ -1905,6 +1951,9 @@ void CDeMultiplexer::FillVideoMPEG2(CTsHeader& header, byte* tsPacket)
     m_p->rtStart = Packet::INVALID_TIME;
     m_lastStart = 0;
     m_bInBlock=false;
+    m_minVideoPTSdiff = DBL_MAX;
+    m_minVideoDTSdiff = DBL_MAX;
+    m_bLogFPSfromDTSPTS = false;
   }
 
   if (header.PayloadUnitStart)
@@ -1993,12 +2042,22 @@ void CDeMultiplexer::FillVideoMPEG2(CTsHeader& header, byte* tsPacket)
             diff=m_lastVideoPTS.ToClock()-pts.ToClock();
           else
             diff=pts.ToClock()-m_lastVideoPTS.ToClock();
+
+          double diffDTS;
+          if (!m_lastVideoDTS.IsValid)
+            m_lastVideoDTS=dts;
+          if (m_lastVideoDTS>dts)
+            diffDTS=m_lastVideoDTS.ToClock()-dts.ToClock();
+          else
+            diffDTS=dts.ToClock()-m_lastVideoDTS.ToClock();
+
           if (diff>2.0)
           {
             //Large PTS jump - flush the world...
             LogDebug("DeMultiplexer::FillVideoMPEG2 pts jump found : %f %f, %f", (float) diff, (float)pts.ToClock(), (float)m_lastVideoPTS.ToClock());
             m_lastAudioPTS.IsValid=false;
             m_lastVideoPTS.IsValid=false;
+            m_lastVideoDTS.IsValid=false;
             //Flushing is delegated to CDeMultiplexer::ThreadProc()
             m_bFlushDelegated = true;
             WakeThread();
@@ -2007,6 +2066,16 @@ void CDeMultiplexer::FillVideoMPEG2(CTsHeader& header, byte* tsPacket)
           {
 //            LogDebug("DeMultiplexer::FillVideo pts : %f ", (float)pts.ToClock());
             m_lastVideoPTS=pts;
+            if ((diff < m_minVideoPTSdiff) && (diff > 0.005))
+            {
+              m_minVideoPTSdiff = diff;
+            }
+            
+            m_lastVideoDTS=dts;
+            if ((diffDTS < m_minVideoDTSdiff) && (diffDTS > 0.005))
+            {
+              m_minVideoDTSdiff = diffDTS;
+            }
           }
           m_VideoPts = pts;
         }

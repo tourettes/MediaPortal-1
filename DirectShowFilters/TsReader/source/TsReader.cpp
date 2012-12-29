@@ -40,6 +40,7 @@
 #include "teletextpin.h"
 #include "tsfileSeek.h"
 #include "memoryreader.h"
+#include "version.h"
 #include "..\..\shared\DebugSettings.h"
 #include <cassert>
 
@@ -181,7 +182,7 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
   GetLogFile(filename);
   ::DeleteFile(filename);
   LogDebug("----- Experimental noStopMod version -----");
-  LogDebug("---------- v0.0.64 XXX -------------------");
+  LogDebug("---------- v0.0.%d XXX -------------------", TSREADER_VERSION);
   
   m_fileReader=NULL;
   m_fileDuration=NULL;
@@ -207,6 +208,7 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
   m_bDisableVidSizeRebuildH264 = false;
   m_bDisableAddPMT = false;
   m_bForceFFDShowSyncFix = false;
+  m_bUseFPSfromDTSPTS = true;
   if (ERROR_SUCCESS==RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Team MediaPortal\\TsReader", 0, NULL, 
                                     REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, NULL))
   {
@@ -246,10 +248,23 @@ CTsReaderFilter::CTsReaderFilter(IUnknown *pUnk, HRESULT *phr):
       m_bForceFFDShowSyncFix = true;
     }
     
+    keyValue = m_bUseFPSfromDTSPTS ? 1 : 0;
+    LPCTSTR useFPSfromDTSPTS_RRK = TEXT("UseFPSfromDTSPTS");
+    ReadRegistryKeyDword(key, useFPSfromDTSPTS_RRK, keyValue);
+    if (keyValue)
+    {
+      LogDebug("----- UseFPSfromDTSPTS -----");
+      m_bUseFPSfromDTSPTS = true;
+    }
+    else
+    {
+      m_bUseFPSfromDTSPTS = false;
+    }
+
     RegCloseKey(key);
   }
   
-  // Set default filtering mode (normal), if not overriden externaly (see ITSReader::SetRelaxedMode)
+  // Set default filtering mode (normal), if not overriden externally (see ITSReader::SetRelaxedMode)
   m_demultiplexer.m_DisableDiscontinuitiesFiltering = false;
   
   if(!DoNotAllowSlowMotionDuringZapping())
