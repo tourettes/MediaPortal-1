@@ -454,6 +454,18 @@ bool CDeMultiplexer::GetVideoStreamType(CMediaType &pmt)
         
         if (BestVal > 0.0)
         {
+          //Sanity check - get timestamp FPS into the same ballpark as the header FPS....
+          if ((m_mpegPesParser->basicVideoInfo.fps < 40.0) && (BestVal < 0.025))
+          {
+            //header FPS is < 40 and timestamp FPS is > 40, divide timestamp FPS by 2
+            BestVal *= 2.0;
+          }
+          else if ((m_mpegPesParser->basicVideoInfo.fps > 40.0) && (BestVal > 0.025))
+          {
+            //header FPS is > 40 and timestamp FPS is < 40, so multiply timestamp FPS by 2
+            BestVal /= 2.0;
+          }
+          
           //Update PMT with new AvgTimePerFrame value          
           if (pmt.formattype==FORMAT_VideoInfo)
             ((VIDEOINFOHEADER*)pmt.pbFormat)->AvgTimePerFrame = (REFERENCE_TIME)(BestVal * 10000000.0);
