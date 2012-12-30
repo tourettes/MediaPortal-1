@@ -106,6 +106,7 @@ namespace MediaPortal.Player
     private static bool _BDInternalMenu = false;
 
     private static string _externalPlayerExtensions = string.Empty;
+    private static int _titleToDB = 0;
 
     #endregion
 
@@ -903,6 +904,18 @@ namespace MediaPortal.Player
     public static bool PlayBD(string strPath)
     {
       return Play(strPath, MediaType.Video);
+    }
+
+    public static int SetResumeBDTitleState
+    {
+      get
+      {
+        return _titleToDB;
+      }
+      set
+      {
+        _titleToDB = value;
+      }
     }
 
     /* using Play function from new PlayDVD

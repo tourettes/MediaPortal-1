@@ -2513,14 +2513,27 @@ namespace MediaPortal.Player
             // BD has only one title (remux one)
             _forceTitle = true;
             _titleToPlay = 0;
+
+            // Send msg to ask resume for the title selected
+            GUIMessage msg = null;
+            msg = new GUIMessage(GUIMessage.MessageType.GUI_MSG_PLAY_BD, 0, 0, 0, 0, 0, null);
+            msg.Label = filename;
+            GUIWindowManager.SendMessage(msg);
           }
           else
           {
             _titleToPlay = SelectTitle(titles);
+            g_Player.SetResumeBDTitleState = _titleToPlay;
             if (_titleToPlay > -1)
             {
               // a specific title was selected
               _forceTitle = true;
+
+              // Send msg to ask resume for the title selected
+              GUIMessage msg = null;
+              msg = new GUIMessage(GUIMessage.MessageType.GUI_MSG_PLAY_BD, 0, 0, 0, 0, 0, null);
+              msg.Label = filename;
+              GUIWindowManager.SendMessage(msg);
             }
             else
             {

@@ -533,7 +533,7 @@ namespace MediaPortal.Video.Database
       DatabaseUtility.AddTable(m_db, "files",
                                "CREATE TABLE files ( idFile integer primary key, idPath integer, idMovie integer,strFilename text)");
       DatabaseUtility.AddTable(m_db, "resume",
-                               "CREATE TABLE resume ( idResume integer primary key, idFile integer, stoptime integer, resumeData blob)");
+                               "CREATE TABLE resume ( idResume integer primary key, idFile integer, stoptime integer, resumeData blob, bdtitle integer)");
       DatabaseUtility.AddTable(m_db, "duration",
                                "CREATE TABLE duration ( idDuration integer primary key, idFile integer, duration integer)");
       DatabaseUtility.AddTable(m_db, "actorinfo",
@@ -2903,26 +2903,40 @@ namespace MediaPortal.Video.Database
       return new string(chars);
     }
 
-    public int GetMovieStopTimeAndResumeData(int iFileId, out byte[] resumeData)
+    public int GetMovieStopTimeAndResumeData(int iFileId, out byte[] resumeData, int bdtitle)
     {
       resumeData = null;
 
       try
       {
-        string sql = string.Format("SELECT * FROM resume WHERE idFile={0}", iFileId);
-        SQLiteResultSet results = m_db.Execute(sql);
-        
-        if (results.Rows.Count == 0)
-        {
-          return 0;
-        }
-        
+        string sql = String.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, bdtitle);
+        SQLiteResultSet resultsBD = m_db.Execute(sql);
         int stoptime;
-        Int32.TryParse(DatabaseUtility.Get(results, 0, "stoptime"), out stoptime);
-        string resumeString = DatabaseUtility.Get(results, 0, "resumeData");
-        resumeData = new byte[resumeString.Length / 2];
-        FromHexString(resumeString).CopyTo(resumeData, 0);
-        return stoptime;
+
+        if (resultsBD.Rows.Count != 0)
+        {
+          Int32.TryParse(DatabaseUtility.Get(resultsBD, 0, "stoptime"), out stoptime);
+          string resumeString = DatabaseUtility.Get(resultsBD, 0, "resumeData");
+          resumeData = new byte[resumeString.Length/2];
+          FromHexString(resumeString).CopyTo(resumeData, 0);
+          return stoptime;
+        }
+        else
+        {
+          sql = string.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, 0);
+          SQLiteResultSet results = m_db.Execute(sql);
+
+          if (results.Rows.Count == 0)
+          {
+            return 0;
+          }
+
+          Int32.TryParse(DatabaseUtility.Get(results, 0, "stoptime"), out stoptime);
+          string resumeString = DatabaseUtility.Get(results, 0, "resumeData");
+          resumeData = new byte[resumeString.Length / 2];
+          FromHexString(resumeString).CopyTo(resumeData, 0);
+          return stoptime;
+        }
       }
       catch (Exception ex)
       {
@@ -2932,30 +2946,32 @@ namespace MediaPortal.Video.Database
       return 0;
     }
 
-    public void SetMovieStopTimeAndResumeData(int iFileId, int stoptime, byte[] resumeData)
+    public void SetMovieStopTimeAndResumeData(int iFileId, int stoptime, byte[] resumeData, int bdtitle)
     {
       try
       {
-        string sql = String.Format("SELECT * FROM resume WHERE idFile={0}", iFileId);
-        SQLiteResultSet results = m_db.Execute(sql);
+        string sql = String.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, bdtitle);
+        SQLiteResultSet resultsBD = m_db.Execute(sql);
+
         string resumeString = "-";
 
         if (resumeData != null)
         {
           resumeString = ToHexString(resumeData);
         }
-
-        if (results.Rows.Count == 0)
+        
+        if (resultsBD.Rows.Count != 0)
         {
-          sql = String.Format("INSERT INTO resume ( idResume,idFile,stoptime,resumeData) VALUES(NULL,{0},{1},'{2}')",
-                              iFileId, stoptime, resumeString);
+          sql = String.Format("UPDATE resume SET stoptime={0},resumeData='{1}' WHERE idFile={2} AND bdtitle={3}",
+                              stoptime, resumeString, iFileId, bdtitle);
         }
-        else
+        else if (bdtitle >= 0)
         {
-          sql = String.Format("UPDATE resume SET stoptime={0},resumeData='{1}' WHERE idFile={2}",
-                              stoptime, resumeString, iFileId);
+          sql =
+            String.Format(
+              "INSERT INTO resume ( idResume,idFile,stoptime,resumeData,bdtitle) VALUES(NULL,{0},{1},'{2}',{3})",
+              iFileId, stoptime, resumeString, bdtitle);
         }
-
         m_db.Execute(sql);
       }
       catch (Exception ex)

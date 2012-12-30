@@ -147,7 +147,7 @@ namespace MediaPortal.GUI.Video
 
           if ((idMovieImg >= 0) && (idFileImg >= 0))
           {
-            timeMovieStopped = VideoDatabase.GetMovieStopTimeAndResumeData(idFileImg, out resumeData);
+            timeMovieStopped = VideoDatabase.GetMovieStopTimeAndResumeData(idFileImg, out resumeData, g_Player.SetResumeBDTitleState);
 
             if (timeMovieStopped > 0)
             {
