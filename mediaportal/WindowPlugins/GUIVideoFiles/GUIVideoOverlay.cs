@@ -398,30 +398,34 @@ namespace MediaPortal.GUI.Video
         }
         else // Nfo support
         {
-          string path = string.Empty;
-          int pathIndex = 0;
-          
-          if (fileName.ToUpperInvariant().Contains(@"\BDMV"))
+          try
           {
-            pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\BDMV");
-            path = fileName.Remove(pathIndex);
-          }
-          else if (fileName.ToUpperInvariant().Contains(@"\VIDEO_TS\"))
-          {
-            pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\VIDEO_TS\");
-            path = fileName.Remove(pathIndex);
-          }
-          else
-          {
-            path = Path.GetDirectoryName(fileName);
-          }
-          
-          IMDBMovie.FetchMovieNfo(path, fileName, ref movieDetails);
+            string path = string.Empty;
+            int pathIndex = 0;
 
-          if (!movieDetails.IsEmpty)
-          {
-            bMovieInfoFound = true;
+            if (fileName.ToUpperInvariant().Contains(@"\BDMV"))
+            {
+              pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\BDMV");
+              path = fileName.Remove(pathIndex);
+            }
+            else if (fileName.ToUpperInvariant().Contains(@"\VIDEO_TS\"))
+            {
+              pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\VIDEO_TS\");
+              path = fileName.Remove(pathIndex);
+            }
+            else
+            {
+              path = Path.GetDirectoryName(fileName);
+            }
+
+            IMDBMovie.FetchMovieNfo(path, fileName, ref movieDetails);
+
+            if (!movieDetails.IsEmpty)
+            {
+              bMovieInfoFound = true;
+            }
           }
+          catch (Exception) { }
         }
         if (bMovieInfoFound)
         {
