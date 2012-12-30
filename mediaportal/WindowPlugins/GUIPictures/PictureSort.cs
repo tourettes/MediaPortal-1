@@ -156,12 +156,12 @@ namespace MediaPortal.GUI.Pictures
           {
             if (!UseSortTitle)
             {
-              return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+              return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
             }
             else
             {
               {
-                return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+                return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
               }
             }
           }
@@ -169,12 +169,12 @@ namespace MediaPortal.GUI.Pictures
           {
             if (!UseSortTitle)
             {
-              return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
+              return Util.Utils.StrCmpLogicalW(item2.Label, item1.Label);
             }
             else
             {
               {
-                return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
+                return Util.Utils.StrCmpLogicalW(item2.Label, item1.Label);
               }
             }
           }
@@ -219,11 +219,11 @@ namespace MediaPortal.GUI.Pictures
         case SortMethod.Label:
           if (SortAscending)
           {
-            return Util.StringLogicalComparer.Compare(item1.DVDLabel, item2.DVDLabel);
+            return Util.Utils.StrCmpLogicalW(item1.DVDLabel, item2.DVDLabel);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(item2.DVDLabel, item1.DVDLabel);
+            return Util.Utils.StrCmpLogicalW(item2.DVDLabel, item1.DVDLabel);
           }
         case SortMethod.Size:
           if (item1.FileInfo == null || item2.FileInfo == null)
@@ -335,12 +335,12 @@ namespace MediaPortal.GUI.Pictures
               {
                 if (!UseSortTitle)
                 {
-                  return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+                  return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
                 }
                 else
                 {
                   {
-                    return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+                    return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
                   }
                 }
               }
@@ -348,12 +348,12 @@ namespace MediaPortal.GUI.Pictures
               {
                 if (!UseSortTitle)
                 {
-                  return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
+                  return Util.Utils.StrCmpLogicalW(item2.Label, item1.Label);
                 }
                 else
                 {
                   {
-                    return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
+                    return Util.Utils.StrCmpLogicalW(item2.Label, item1.Label);
                   }
                 }
               }

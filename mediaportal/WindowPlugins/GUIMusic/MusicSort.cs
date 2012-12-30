@@ -129,11 +129,11 @@ namespace MediaPortal.GUI.Music
         case SortMethod.Name:
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+            return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(item2.Label, item1.Label);
+            return Util.Utils.StrCmpLogicalW(item2.Label, item1.Label);
           }
 
 
@@ -183,18 +183,18 @@ namespace MediaPortal.GUI.Music
             if (item1.Year == item2.Year)
             {
               // When the Year is equal just sort on the Label
-              return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+              return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
             }
-            return Util.StringLogicalComparer.Compare(compVal1, compVal2);
+            return Util.Utils.StrCmpLogicalW(compVal1, compVal2);
           }
           else
           {
             if (item1.Year == item2.Year)
             {
               // When the Year is equal, sort on label ASCENDING, altough sorting on year is DESC
-              return Util.StringLogicalComparer.Compare(item1.Label, item2.Label);
+              return Util.Utils.StrCmpLogicalW(item1.Label, item2.Label);
             }
-            return Util.StringLogicalComparer.Compare(compVal2, compVal1);
+            return Util.Utils.StrCmpLogicalW(compVal2, compVal1);
           }
 
         case SortMethod.Rating:
@@ -300,11 +300,11 @@ namespace MediaPortal.GUI.Music
           }
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(strTitle1, strTitle2);
+            return Util.Utils.StrCmpLogicalW(strTitle1, strTitle2);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(strTitle2, strTitle1);
+            return Util.Utils.StrCmpLogicalW(strTitle2, strTitle1);
           }
 
         case SortMethod.Artist:
@@ -318,11 +318,11 @@ namespace MediaPortal.GUI.Music
           }
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(strArtist1, strArtist2);
+            return Util.Utils.StrCmpLogicalW(strArtist1, strArtist2);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(strArtist2, strArtist1);
+            return Util.Utils.StrCmpLogicalW(strArtist2, strArtist1);
           }
 
         case SortMethod.AlbumArtist:
@@ -336,11 +336,11 @@ namespace MediaPortal.GUI.Music
           }
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(strAlbumArtist1, strAlbumArtist2);
+            return Util.Utils.StrCmpLogicalW(strAlbumArtist1, strAlbumArtist2);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(strAlbumArtist2, strAlbumArtist1);
+            return Util.Utils.StrCmpLogicalW(strAlbumArtist2, strAlbumArtist1);
           }
 
         case SortMethod.Album:
@@ -377,12 +377,12 @@ namespace MediaPortal.GUI.Music
               }
               else
               {
-                return Util.StringLogicalComparer.Compare(strAlbumArtist1, strAlbumArtist2);
+                return Util.Utils.StrCmpLogicalW(strAlbumArtist1, strAlbumArtist2);
               }
             }
             else
             {
-              return Util.StringLogicalComparer.Compare(strAlbum1, strAlbum2);
+              return Util.Utils.StrCmpLogicalW(strAlbum1, strAlbum2);
             }
           }
           else
@@ -402,12 +402,12 @@ namespace MediaPortal.GUI.Music
               }
               else
               {
-                return Util.StringLogicalComparer.Compare(strAlbumArtist2, strAlbumArtist1);
+                return Util.Utils.StrCmpLogicalW(strAlbumArtist2, strAlbumArtist1);
               }
             }
             else
             {
-              return Util.StringLogicalComparer.Compare(strAlbum2, strAlbum1);
+              return Util.Utils.StrCmpLogicalW(strAlbum2, strAlbum1);
             }
           }
 
@@ -417,11 +417,11 @@ namespace MediaPortal.GUI.Music
           string strFile2 = Util.Utils.GetFilename(item2.Path);
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(strFile1, strFile2);
+            return Util.Utils.StrCmpLogicalW(strFile1, strFile2);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(strFile2, strFile1);
+            return Util.Utils.StrCmpLogicalW(strFile2, strFile1);
           }
 
         case SortMethod.Composer:
@@ -438,11 +438,11 @@ namespace MediaPortal.GUI.Music
 
           if (bAscending)
           {
-            return Util.StringLogicalComparer.Compare(strComposer1, strComposer2);
+            return Util.Utils.StrCmpLogicalW(strComposer1, strComposer2);
           }
           else
           {
-            return Util.StringLogicalComparer.Compare(strComposer2, strComposer1);
+            return Util.Utils.StrCmpLogicalW(strComposer2, strComposer1);
           }
 
         case SortMethod.TimesPlayed:
