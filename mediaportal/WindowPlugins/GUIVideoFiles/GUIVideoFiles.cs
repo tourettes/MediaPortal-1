@@ -3155,8 +3155,8 @@ namespace MediaPortal.GUI.Video
         {
           byte[] resumeData = null;
           g_Player.Player.GetResumeState(out resumeData);
-          Log.Info("GUIVideoFiles: {0} idFile={1} timeMovieStopped={2} resumeData={3}", caller, idFile, timeMovieStopped,
-                   resumeData);
+          Log.Info("GUIVideoFiles: {0} idFile={1} timeMovieStopped={2} resumeData={3} bdtitle={4}", caller, idFile, timeMovieStopped,
+                   resumeData, g_Player.SetResumeBDTitleState);
           VideoDatabase.SetMovieStopTimeAndResumeData(idFile, timeMovieStopped, resumeData, g_Player.SetResumeBDTitleState);
           Log.Debug("GUIVideoFiles: {0} store resume time", caller);
 

@@ -278,6 +278,14 @@ namespace MediaPortal.Video.Database
           watchedUpg = true;
         }
 
+        // bdtitle int
+        if (DatabaseUtility.TableColumnExists(m_db, "resume", "bdtitle") == false)
+        {
+          string strSQL = "ALTER TABLE \"main\".\"resume\" ADD COLUMN \"bdtitle\" integer DEFAULT 0";
+          m_db.Execute(strSQL);
+          watchedUpg = true;
+        }
+
         #endregion
 
         #region MediaInfo table
