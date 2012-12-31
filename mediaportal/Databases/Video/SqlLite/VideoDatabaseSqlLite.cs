@@ -281,7 +281,7 @@ namespace MediaPortal.Video.Database
         // bdtitle int
         if (DatabaseUtility.TableColumnExists(m_db, "resume", "bdtitle") == false)
         {
-          string strSQL = "ALTER TABLE \"main\".\"resume\" ADD COLUMN \"bdtitle\" integer DEFAULT 0";
+          string strSQL = "ALTER TABLE \"main\".\"resume\" ADD COLUMN \"bdtitle\" integer DEFAULT 1000";
           m_db.Execute(strSQL);
           watchedUpg = true;
         }
@@ -2918,32 +2918,25 @@ namespace MediaPortal.Video.Database
       try
       {
         string sql = String.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, bdtitle);
-        SQLiteResultSet resultsBD = m_db.Execute(sql);
+        SQLiteResultSet results = m_db.Execute(sql);
         int stoptime;
+        int BDTileID;
 
-        if (resultsBD.Rows.Count != 0)
+        if (results.Rows.Count != 0)
         {
-          Int32.TryParse(DatabaseUtility.Get(resultsBD, 0, "stoptime"), out stoptime);
-          string resumeString = DatabaseUtility.Get(resultsBD, 0, "resumeData");
+          Int32.TryParse(DatabaseUtility.Get(results, 0, "stoptime"), out stoptime);
+          string resumeString = DatabaseUtility.Get(results, 0, "resumeData");
           resumeData = new byte[resumeString.Length/2];
           FromHexString(resumeString).CopyTo(resumeData, 0);
           return stoptime;
         }
         else
         {
-          sql = string.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, 0);
-          SQLiteResultSet results = m_db.Execute(sql);
-
-          if (results.Rows.Count == 0)
+          Int32.TryParse(DatabaseUtility.Get(results, 0, "bdtitle"), out BDTileID);
+          if (bdtitle != BDTileID)
           {
             return 0;
           }
-
-          Int32.TryParse(DatabaseUtility.Get(results, 0, "stoptime"), out stoptime);
-          string resumeString = DatabaseUtility.Get(results, 0, "resumeData");
-          resumeData = new byte[resumeString.Length / 2];
-          FromHexString(resumeString).CopyTo(resumeData, 0);
-          return stoptime;
         }
       }
       catch (Exception ex)
@@ -2959,7 +2952,7 @@ namespace MediaPortal.Video.Database
       try
       {
         string sql = String.Format("SELECT * FROM resume WHERE idFile={0} AND bdtitle={1}", iFileId, bdtitle);
-        SQLiteResultSet resultsBD = m_db.Execute(sql);
+        SQLiteResultSet results = m_db.Execute(sql);
 
         string resumeString = "-";
 
@@ -2968,7 +2961,7 @@ namespace MediaPortal.Video.Database
           resumeString = ToHexString(resumeData);
         }
         
-        if (resultsBD.Rows.Count != 0)
+        if (results.Rows.Count != 0)
         {
           sql = String.Format("UPDATE resume SET stoptime={0},resumeData='{1}' WHERE idFile={2} AND bdtitle={3}",
                               stoptime, resumeString, iFileId, bdtitle);

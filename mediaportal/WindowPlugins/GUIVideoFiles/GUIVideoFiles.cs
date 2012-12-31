@@ -1650,7 +1650,7 @@ namespace MediaPortal.GUI.Video
     public static void PlayMovieFromPlayList(bool askForResumeMovie, int iMovieIndex, bool requestPin)
     {
       _BDDetect = false;
-      g_Player.SetResumeBDTitleState = 0;
+      g_Player.SetResumeBDTitleState = 1000;
       string filename;
       if (iMovieIndex == -1)
       {
@@ -1842,7 +1842,10 @@ namespace MediaPortal.GUI.Video
                                                  GUIResumeDialog.MediaType.Video);
 
               if (result == GUIResumeDialog.Result.Abort)
+              {
+                g_Player.SetResumeBDTitleState = -1;
                 return;
+              }
 
               if (result == GUIResumeDialog.Result.PlayFromBeginning)
                 timeMovieStopped = 0;

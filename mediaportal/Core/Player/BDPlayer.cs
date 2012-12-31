@@ -842,7 +842,7 @@ namespace MediaPortal.Player
       {
         MovieEnded();
 
-        if (_titleToPlay == -1)
+        if (_titleToPlay == -1 || g_Player.SetResumeBDTitleState == -1)
           return true;
 
         Log.Error("BDPlayer:GetInterfaces() failed");
@@ -2524,6 +2524,7 @@ namespace MediaPortal.Player
           {
             _titleToPlay = SelectTitle(titles);
             g_Player.SetResumeBDTitleState = _titleToPlay;
+            Log.Info("BDPlayer: BDReader _titleToPlay : {0}", _titleToPlay);
             if (_titleToPlay > -1)
             {
               // a specific title was selected
@@ -2534,6 +2535,12 @@ namespace MediaPortal.Player
               msg = new GUIMessage(GUIMessage.MessageType.GUI_MSG_PLAY_BD, 0, 0, 0, 0, 0, null);
               msg.Label = filename;
               GUIWindowManager.SendMessage(msg);
+              if (g_Player.SetResumeBDTitleState == -1)
+              {
+                // user cancelled dialog
+                g_Player.Stop();
+                return false;
+              }
             }
             else
             {
