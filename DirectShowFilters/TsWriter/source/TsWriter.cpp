@@ -432,7 +432,7 @@ CUnknown * WINAPI CMpTs::CreateInstance(LPUNKNOWN punk, HRESULT *phr)
 STDMETHODIMP CMpTs::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
   CheckPointer(ppv,E_POINTER);
-  CAutoLock lock(&m_Lock);
+  // CAutoLock lock(&m_Lock);
 
   // Do we have this interface
 	if (riid == IID_ITSChannelScan)
