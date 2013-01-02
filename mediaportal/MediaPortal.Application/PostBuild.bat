@@ -92,6 +92,9 @@ xcopy %1\Core.cpp\mpc-hc_subs\bin\%2\mpcSubs.pdb . /Y /D
 REM Copy one dll from DirectShowFilters folder
 xcopy %1\..\DirectShowFilters\DXErr9\bin\%2\dxerr9.dll . /Y /D
 
+REM Copy bluray dll from DirectShowFilters folder
+xcopy %1\..\DirectShowFilters\BDReader\libbluray\bluray.dll . /Y /D
+
 REM mpWatchDog
 xcopy %1\WatchDog\bin\%2\WatchDog.exe . /Y /D
 xcopy %1\WatchDog\bin\%2\DaggerLib.dll . /Y /D
