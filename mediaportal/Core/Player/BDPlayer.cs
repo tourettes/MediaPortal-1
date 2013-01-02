@@ -417,10 +417,14 @@ namespace MediaPortal.Player
       BLURAY_STREAM_TYPE_SUB_PG = 0x90,
       BLURAY_STREAM_TYPE_SUB_IG = 0x91,
       BLURAY_STREAM_TYPE_SUB_TEXT = 0x92,
-      BLURAY_AUDIO_FORMAT_MONO              = 1,
-      BLURAY_AUDIO_FORMAT_STEREO            = 3,
-      BLURAY_AUDIO_FORMAT_MULTI_CHAN        = 6,
-      BLURAY_AUDIO_FORMAT_COMBO             = 12
+    }
+
+    protected enum BDAudioFormat
+    {
+      BLURAY_AUDIO_FORMAT_MONO = 1,
+      BLURAY_AUDIO_FORMAT_STEREO = 3,
+      BLURAY_AUDIO_FORMAT_MULTI_CHAN = 6,
+      BLURAY_AUDIO_FORMAT_COMBO = 12 // Stereo ac3/dts,
     }
 
     protected enum VideoRate
@@ -3037,13 +3041,13 @@ namespace MediaPortal.Player
     {
       switch (stream)
       {
-        case (int) BluRayStreamFormats.BLURAY_AUDIO_FORMAT_MONO:
+        case (int)BDAudioFormat.BLURAY_AUDIO_FORMAT_MONO:
           return "1.0";
-        case (int) BluRayStreamFormats.BLURAY_AUDIO_FORMAT_STEREO:
+        case (int)BDAudioFormat.BLURAY_AUDIO_FORMAT_STEREO:
           return "2.0";
-        case (int) BluRayStreamFormats.BLURAY_AUDIO_FORMAT_MULTI_CHAN:
+        case (int)BDAudioFormat.BLURAY_AUDIO_FORMAT_MULTI_CHAN:
           return "5.1";
-        case (int) BluRayStreamFormats.BLURAY_AUDIO_FORMAT_COMBO:
+        case (int)BDAudioFormat.BLURAY_AUDIO_FORMAT_COMBO:
           return "7.1";
       }
       return Strings.Unknown;
