@@ -141,7 +141,6 @@ private:
     int audioType;
     char language[7];
     int audioChannelCount;
-    char channelLanguage[7];
   };
 
   struct stSubtitleStream

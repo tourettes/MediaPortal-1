@@ -195,9 +195,6 @@ void CDeMultiplexer::GetAudioStreamInfo(int stream, char* szName)
   szName[4] = m_audioStreams[stream].language[4];
   szName[5] = m_audioStreams[stream].language[5];
   szName[6] = m_audioStreams[stream].language[6];
-  szName[7] = m_audioStreams[stream].channelLanguage[0];
-  szName[8] = m_audioStreams[stream].channelLanguage[1];
-  szName[9] = m_audioStreams[stream].channelLanguage[2];
 
 }
 
@@ -1809,11 +1806,6 @@ void CDeMultiplexer::ParseAudioStreams(BLURAY_CLIP_INFO* clip)
             m_iAudioIdx = i;
         }
       }
-
-      audio.channelLanguage[0] = StreamAudioFormatAsString(audio.audioChannelCount)[0];
-      audio.channelLanguage[1] = StreamAudioFormatAsString(audio.audioChannelCount)[1];
-      audio.channelLanguage[2] = StreamAudioFormatAsString(audio.audioChannelCount)[2];
-      audio.channelLanguage[3] = StreamAudioFormatAsString(audio.audioChannelCount)[3];
 
       LogDebug("   Audio #%d:[%4d] %s %s %s", i, audio.pid, audio.language, StreamFormatAsString(audio.audioType), StreamAudioFormatAsString(audio.audioChannelCount));
 
