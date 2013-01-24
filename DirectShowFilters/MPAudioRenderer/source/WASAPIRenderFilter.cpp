@@ -19,7 +19,11 @@
 #include "WASAPIRenderFilter.h"
 #include "TimeSource.h"
 
+#include "C:\Program Files (x86)\Mega-Nerd\libsndfile\include\sndfile.hh"
+
 #include "alloctracing.h"
+
+static SndfileHandle* handle = NULL;  
 
 CWASAPIRenderFilter::CWASAPIRenderFilter(AudioRendererSettings* pSettings, CSyncClock* pClock) :
   m_pSettings(pSettings),
@@ -47,6 +51,14 @@ CWASAPIRenderFilter::CWASAPIRenderFilter(AudioRendererSettings* pSettings, CSync
   m_ullPrevQpc(0),
   m_ullPrevPos(0)
 {
+  const int format=SF_FORMAT_WAV | SF_FORMAT_PCM_24;
+  //	const int format=SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+  const int channels=6;
+  const int sampleRate=48000;
+  const char* outfilename="d:\\foo.wav";
+
+  handle = new SndfileHandle(outfilename, SFM_WRITE, format, channels, sampleRate);
+
   OSVERSIONINFO osvi;
   ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -940,9 +952,13 @@ void CWASAPIRenderFilter::RenderAudio(BYTE* pTarget, UINT32 bufferSizeInBytes, U
 
   UINT32 bytesToCopy = min(dataLeftInSample, bufferSizeInBytes - bytesFilled);
   memcpy(pTarget + bytesFilled, sampleData + sampleOffset, bytesToCopy); 
+  
+  const short* data = (short*)(sampleData + sampleOffset);
+  handle->write(data, bytesToCopy/3);
+  
   bytesFilled += bytesToCopy;
   sampleOffset += bytesToCopy;
-  
+
   if (m_pSettings->m_bLogDebug)
     Log("writing buffer with data: %d", bytesToCopy);
 }
