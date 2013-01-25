@@ -117,20 +117,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libresample\src\samplerate.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="libresample\src\src_linear.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="libresample\src\src_sinc.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="libresample\src\src_zoh.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-    </ClCompile>
     <ClCompile Include="AE_mixer\AEChannelInfo.cpp" />
     <ClCompile Include="AE_mixer\AERemap.cpp" />
+    <ClCompile Include="libresample\src\resample.c" />
+    <ClCompile Include="libsamplerate\src\samplerate.c" />
+    <ClCompile Include="libsamplerate\src\src_linear.c" />
+    <ClCompile Include="libsamplerate\src\src_sinc.c" />
+    <ClCompile Include="libsamplerate\src\src_zoh.c" />
     <ClCompile Include="source\AC3EncoderFilter.cpp" />
     <ClCompile Include="source\BaseAudioSink.cpp" />
     <ClCompile Include="source\BitDepthAdapter.cpp" />
@@ -190,11 +183,12 @@
     <None Include="source\MpAudioRenderer.def" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="libresample\src\samplerate.h" />
     <ClInclude Include="AE_mixer\AEAudioFormat.h" />
     <ClInclude Include="AE_mixer\AEChannelInfo.h" />
     <ClInclude Include="AE_mixer\AERemap.h" />
     <ClInclude Include="AE_mixer\StdString.h" />
+    <ClInclude Include="libresample\src\resample.h" />
+    <ClInclude Include="libsamplerate\src\samplerate.h" />
     <ClInclude Include="source\AC3EncoderFilter.h" />
     <ClInclude Include="source\BaseAudioSink.h" />
     <ClInclude Include="source\BitDepthAdapter.h" />

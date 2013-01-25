@@ -26,18 +26,6 @@
     <ClCompile Include="source\ClockAdjuster.cpp" />
     <ClCompile Include="source\SynchCorrection.cpp" />
     <ClCompile Include="source\WASAPIRenderFilter.cpp" />
-    <ClCompile Include="libresample\src\src_linear.c">
-      <Filter>libsamplerate</Filter>
-    </ClCompile>
-    <ClCompile Include="libresample\src\src_zoh.c">
-      <Filter>libsamplerate</Filter>
-    </ClCompile>
-    <ClCompile Include="libresample\src\samplerate.c">
-      <Filter>libsamplerate</Filter>
-    </ClCompile>
-    <ClCompile Include="libresample\src\src_sinc.c">
-      <Filter>libsamplerate</Filter>
-    </ClCompile>
     <ClCompile Include="source\Globals.cpp" />
     <ClCompile Include="source\ChannelMixer.cpp" />
     <ClCompile Include="AE_mixer\AEChannelInfo.cpp">
@@ -90,6 +78,21 @@
     </ClCompile>
     <ClCompile Include="source\StreamSanitizerFilter.cpp" />
     <ClCompile Include="source\SettingsProp.cpp" />
+    <ClCompile Include="libsamplerate\src\samplerate.c">
+      <Filter>libsamplerate</Filter>
+    </ClCompile>
+    <ClCompile Include="libsamplerate\src\src_linear.c">
+      <Filter>libsamplerate</Filter>
+    </ClCompile>
+    <ClCompile Include="libsamplerate\src\src_sinc.c">
+      <Filter>libsamplerate</Filter>
+    </ClCompile>
+    <ClCompile Include="libsamplerate\src\src_zoh.c">
+      <Filter>libsamplerate</Filter>
+    </ClCompile>
+    <ClCompile Include="libresample\src\resample.c">
+      <Filter>libresample</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\AC3EncoderFilter.h" />
@@ -123,9 +126,6 @@
     <ClInclude Include="source\ClockAdjuster.h" />
     <ClInclude Include="source\SynchCorrection.h" />
     <ClInclude Include="source\WASAPIRenderFilter.h" />
-    <ClInclude Include="libresample\src\samplerate.h">
-      <Filter>libsamplerate</Filter>
-    </ClInclude>
     <ClInclude Include="source\Globals.h" />
     <ClInclude Include="source\ChannelMixer.h" />
     <ClInclude Include="AE_mixer\AEAudioFormat.h">
@@ -181,6 +181,12 @@
     </ClInclude>
     <ClInclude Include="source\StreamSanitizerFilter.h" />
     <ClInclude Include="source\SettingsProp.h" />
+    <ClInclude Include="libsamplerate\src\samplerate.h">
+      <Filter>libsamplerate</Filter>
+    </ClInclude>
+    <ClInclude Include="libresample\src\resample.h">
+      <Filter>libresample</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\MpAudioRenderer.rc" />
@@ -200,6 +206,9 @@
     </Filter>
     <Filter Include="AC3_encoder">
       <UniqueIdentifier>{c3c8d455-8c72-4d60-af16-01d8b87474ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libresample">
+      <UniqueIdentifier>{033d14df-01c1-4ed7-8492-63a308eb383d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

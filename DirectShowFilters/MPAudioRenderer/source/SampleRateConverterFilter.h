@@ -21,7 +21,7 @@
 #include <ksmedia.h>
 #include "BaseAudioSink.h"
 #include "Settings.h"
-#include "..\libresample\src\samplerate.h"
+#include "..\libsamplerate\src\samplerate.h"
 
 class CSampleRateConverter : public CBaseAudioSink
 {
