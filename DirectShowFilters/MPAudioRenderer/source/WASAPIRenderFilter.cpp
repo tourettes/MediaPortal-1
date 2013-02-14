@@ -572,19 +572,20 @@ HRESULT CWASAPIRenderFilter::Run(REFERENCE_TIME rtStart)
 
   if (SUCCEEDED(hr))
   {
+    double currentBias = m_pClock->GetBias();
     if (m_bResyncHwClock)
-      m_rtHwStart = rtStart + (rtHwTime - rtTime);
+    {
+      m_rtHwStart = rtHwTime  + (rtStart - rtTime) / currentBias;
+      Log("CWASAPIRenderFilter::Run - resync - m_rtHwStart: %10.8f rtStart: %10.8f rtHwTime: %10.8f rtTime: %10.8f",
+        m_rtHwStart / 10000000.0, rtStart / 10000000.0, rtHwTime / 10000000.0, rtTime / 10000000.0);
+    }
     else
     {
-      double currentBias = m_pClock->GetBias();
-      REFERENCE_TIME biasBasedHwStart = rtStart / currentBias;
-
-      double multiplier = (double)(rtTime - m_rtPauseTime) / (double)(rtHwTime - m_rtHwPauseTime);
-      m_rtHwStart = rtStart / multiplier;
-
-      Log("CWASAPIRenderFilter::Run - TEST: currentBias: %10.8f multiplier: %10.8f m_rtHwStart: %10.8f biasBasedHwStart: %10.8f diff: %10.8f",
-        currentBias, multiplier, m_rtHwStart / 10000000.0, biasBasedHwStart / 10000000.0, (biasBasedHwStart - m_rtHwStart) / 10000000.0);
+      m_rtHwStart = rtStart / currentBias;
+      Log("CWASAPIRenderFilter::Run - m_rtHwStart: %10.8f currentBias: %10.8f", m_rtHwStart / 10000000.0, currentBias);
     }
+
+    m_pClock->Reset(rtStart);
 
     m_bResyncHwClock = false;
   }
@@ -600,7 +601,6 @@ HRESULT CWASAPIRenderFilter::Run(REFERENCE_TIME rtStart)
 HRESULT CWASAPIRenderFilter::Pause()
 {
   m_filterState = State_Paused;
-  m_pClock->GetHWTime(&m_rtPauseTime, &m_rtHwPauseTime);
 
   return CQueuedAudioSink::Pause();
 }
