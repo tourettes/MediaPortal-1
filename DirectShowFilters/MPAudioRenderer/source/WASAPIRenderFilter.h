@@ -125,8 +125,6 @@ private:
   REFERENCE_TIME      m_rtNextSampleTime;
   REFERENCE_TIME      m_rtHwStart;
 
-  bool                m_bResyncHwClock;
-
   // Audio HW clock data
   CCritSec            m_csClockLock;
   UINT64              m_ullHwClock[CLOCK_DATA_SIZE];

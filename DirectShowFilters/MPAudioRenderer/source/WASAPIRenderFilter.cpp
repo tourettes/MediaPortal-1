@@ -42,7 +42,6 @@ CWASAPIRenderFilter::CWASAPIRenderFilter(AudioRendererSettings* pSettings, CSync
   m_rtHwStart(0),
   m_nSampleOffset(0),
   m_nDataLeftInSample(0),
-  m_bResyncHwClock(true),
   m_llPosError(0),
   m_ullPrevQpc(0),
   m_ullPrevPos(0)
@@ -573,21 +572,11 @@ HRESULT CWASAPIRenderFilter::Run(REFERENCE_TIME rtStart)
   if (SUCCEEDED(hr))
   {
     double currentBias = m_pClock->GetBias();
-    if (m_bResyncHwClock)
-    {
       m_rtHwStart = rtHwTime  + (rtStart - rtTime) / currentBias;
       Log("CWASAPIRenderFilter::Run - resync - m_rtHwStart: %10.8f rtStart: %10.8f rtHwTime: %10.8f rtTime: %10.8f",
         m_rtHwStart / 10000000.0, rtStart / 10000000.0, rtHwTime / 10000000.0, rtTime / 10000000.0);
-    }
-    else
-    {
-      m_rtHwStart = rtStart / currentBias;
-      Log("CWASAPIRenderFilter::Run - m_rtHwStart: %10.8f currentBias: %10.8f", m_rtHwStart / 10000000.0, currentBias);
-    }
 
     m_pClock->Reset(rtStart);
-
-    m_bResyncHwClock = false;
   }
   else
     Log("CWASAPIRenderFilter::Run - error (0x%08x)", hr);
@@ -601,13 +590,11 @@ HRESULT CWASAPIRenderFilter::Run(REFERENCE_TIME rtStart)
 HRESULT CWASAPIRenderFilter::Pause()
 {
   m_filterState = State_Paused;
-
   return CQueuedAudioSink::Pause();
 }
 
 HRESULT CWASAPIRenderFilter::BeginStop()
 {
-  m_bResyncHwClock = true;
   m_filterState = State_Stopped;
   return CQueuedAudioSink::BeginStop();
 }
@@ -615,7 +602,6 @@ HRESULT CWASAPIRenderFilter::BeginStop()
 // Processing
 HRESULT CWASAPIRenderFilter::BeginFlush()
 {
-  m_bResyncHwClock = true;
   return CQueuedAudioSink::BeginFlush();
 }
 
