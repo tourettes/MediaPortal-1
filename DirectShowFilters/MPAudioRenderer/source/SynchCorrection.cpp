@@ -180,8 +180,12 @@ INT64 SynchCorrection::GetPresenterInducedAudioDelay() const
 INT64 SynchCorrection::GetCorrectedTimeDelta(INT64 time, REFERENCE_TIME rtAHwTime, REFERENCE_TIME rtRCTime)
 {
   double deltaTime = 0;
+  if (m_dDeltaError<0)
+    Log("Delta Error : %6.3", m_dDeltaError);
+  
   deltaTime = time * m_Adjustment * m_Bias + m_dDeltaError;
-  m_dDeltaError = deltaTime - ((int) deltaTime);
+  m_dDeltaError = deltaTime - floor(deltaTime);
+  
   return (INT64) deltaTime;
 }
 
@@ -196,40 +200,37 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
 {
   double ret = bias* adjustment;
   double totalAudioDrift = CalculateDrift(rtAHwTime, rtRCTime - m_rtStart) + m_dAudioDelay +m_dEVRAudioDelay;
-
-  if (ret > 1.0 - QUALITY_BIAS_LIMIT &&  ret < 1.0 + QUALITY_BIAS_LIMIT) 
+ 
+  if (ret > 1.0 - QUALITY_BIAS_LIMIT &&  ret < 1.0 + QUALITY_BIAS_LIMIT)
     m_bQualityMode = true;
-  else
-    m_bQualityMode = false;
-
-  if (totalAudioDrift > ALLOWED_DRIFT)
+  else if (totalAudioDrift > ALLOWED_DRIFT && !m_bQualityMode)
   { // we've stretched too much shift down for a while
     double msDrift = totalAudioDrift / 10000.0;
     double quickCorrection = 1.0;
-    
-    if (msDrift > 10.0) 
+   
+    if (msDrift > 10.0)
       quickCorrection = log(msDrift);
-    else 
+    else
       quickCorrection = msDrift / 10.0;
-    
+  
     if (quickCorrection > 5.0) quickCorrection = 5.0;
     ret = ret * (1.0 / (1 + (CORRECTION_RATE-1) * quickCorrection));
   }
-  if (totalAudioDrift < ALLOWED_DRIFT * -1.0)
+  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0  && !m_bQualityMode && bias < 1.0)
   { // haven't streched enough
-    double msDrift = totalAudioDrift / -10000.0; 
+    double msDrift = totalAudioDrift / -10000.0;
     double quickCorrection = 1.0;
-
-    if (msDrift > 10.0) 
+ 
+    if (msDrift > 10.0)
       quickCorrection = log(msDrift);
-    else 
+    else
       quickCorrection = msDrift / 10.0;
-    
-    if (quickCorrection > 5.0) 
+   
+    if (quickCorrection > 5.0)
       quickCorrection=5.0;
-    
+   
     ret = ret * (1+(CORRECTION_RATE-1)*quickCorrection);
-  } 
+  }
   if (m_bQualityMode)
   {
     ret = 1.0; // 1 to 1 playback unless proved otherwise
