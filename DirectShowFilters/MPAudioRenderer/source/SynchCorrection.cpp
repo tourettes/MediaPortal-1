@@ -69,7 +69,6 @@ void SynchCorrection::Reset(bool soft)
     m_rtStart = 0;
     m_dEVRAudioDelay = 0.0;
     m_dlastAdjustment = 1.0;
-    m_bQualityMode = false;
     m_iQualityDir = 0;
     m_bQualityCorrectionOn = false;
     m_bDriftCorrectionEnabled = true;
@@ -202,36 +201,6 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
   double totalAudioDrift = CalculateDrift(rtAHwTime, rtRCTime - m_rtStart) + m_dAudioDelay +m_dEVRAudioDelay;
  
   if (ret > 1.0 - QUALITY_BIAS_LIMIT &&  ret < 1.0 + QUALITY_BIAS_LIMIT)
-    m_bQualityMode = true;
-  else if (totalAudioDrift > ALLOWED_DRIFT && !m_bQualityMode)
-  { // we've stretched too much shift down for a while
-    double msDrift = totalAudioDrift / 10000.0;
-    double quickCorrection = 1.0;
-   
-    if (msDrift > 10.0)
-      quickCorrection = log(msDrift);
-    else
-      quickCorrection = msDrift / 10.0;
-  
-    if (quickCorrection > 5.0) quickCorrection = 5.0;
-    ret = ret * (1.0 / (1 + (CORRECTION_RATE-1) * quickCorrection));
-  }
-  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0  && !m_bQualityMode && bias < 1.0)
-  { // haven't streched enough
-    double msDrift = totalAudioDrift / -10000.0;
-    double quickCorrection = 1.0;
- 
-    if (msDrift > 10.0)
-      quickCorrection = log(msDrift);
-    else
-      quickCorrection = msDrift / 10.0;
-   
-    if (quickCorrection > 5.0)
-      quickCorrection=5.0;
-   
-    ret = ret * (1+(CORRECTION_RATE-1)*quickCorrection);
-  }
-  if (m_bQualityMode)
   {
     ret = 1.0; // 1 to 1 playback unless proved otherwise
     if (m_bQualityCorrectionOn) // we are correcting drift
@@ -244,13 +213,9 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
         m_iQualityDir=0;
       }
       if (m_iQualityDir==DIRUP) //behind so stretch
-      {
         ret = QUALITY_CORRECTION_MULTIPLIER;
-      }
       else if (m_iQualityDir==DIRDOWN) // in front so slow
-      {
         ret = 1.0 / QUALITY_CORRECTION_MULTIPLIER;
-      }
     }
     else // not correcting now so check for breach
     {
@@ -265,6 +230,34 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
         m_iQualityDir = DIRUP;
       }
     }
+  }
+  else if (totalAudioDrift > ALLOWED_DRIFT && bias > 1.0)
+  { // we've stretched too much shift down for a while
+    double msDrift = totalAudioDrift / 10000.0;
+    double quickCorrection = 1.0;
+   
+    if (msDrift > 10.0)
+      quickCorrection = log(msDrift);
+    else
+      quickCorrection = msDrift / 10.0;
+   
+    if (quickCorrection > 5.0) quickCorrection = 5.0;
+    ret = ret * (1.0 / (1 + (CORRECTION_RATE-1) * quickCorrection));
+  }
+  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0 && bias < 1.0)
+  { // haven't streched enough
+    double msDrift = totalAudioDrift / -10000.0;
+    double quickCorrection = 1.0;
+ 
+    if (msDrift > 10.0)
+      quickCorrection = log(msDrift);
+    else
+      quickCorrection = msDrift / 10.0;
+   
+    if (quickCorrection > 5.0)
+      quickCorrection=5.0;
+   
+    ret = ret * (1+(CORRECTION_RATE-1)*quickCorrection);
   }
   return ret;
 }
