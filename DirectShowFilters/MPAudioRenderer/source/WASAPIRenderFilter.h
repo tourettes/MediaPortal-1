@@ -42,7 +42,7 @@ public:
   HRESULT BeginStop();
 
   // IRenderFilter implementation
-  HRESULT AudioClock(ULONGLONG& pTimestamp, ULONGLONG& pQpc);
+  HRESULT AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG& ullQpcNow);
   REFERENCE_TIME Latency();
   void ReleaseDevice();
   REFERENCE_TIME BufferredDataDuration();

@@ -46,6 +46,7 @@ public:
   HRESULT Reset();
   HRESULT Reset(REFERENCE_TIME tStart);
   void GetClockData(CLOCKDATA *pClockData);
+  void UpdateClockData(REFERENCE_TIME rtAHwTime, REFERENCE_TIME rtRCTime);
 
   void AddSample(INT64 rtOriginalStart, INT64 rtAdjustedStart, INT64 rtOriginalEnd, INT64 rtAdjustedEnd);
   double SuggestedAudioMultiplier(REFERENCE_TIME rtAHwTime, REFERENCE_TIME rtRCTime, double bias, double adjustment);
@@ -92,4 +93,7 @@ private:
   IReferenceClock*  m_pPrevRefClock;
   CMPAudioRenderer* m_pAudioRenderer;
   AudioRendererSettings* m_pSettings;
+
+  // Debug data for the video presenter
+  double m_dCurrentDrift;
 };

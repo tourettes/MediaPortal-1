@@ -270,10 +270,10 @@ HRESULT	CMPAudioRenderer::CheckMediaType(const CMediaType* pmt)
   }
 }
 
-HRESULT CMPAudioRenderer::AudioClock(UINT64& pTimestamp, UINT64& pQpc)
+HRESULT CMPAudioRenderer::AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG& ullQpcNow)
 {
   if (m_pRenderer)
-    return m_pRenderer->AudioClock(pTimestamp, pQpc);
+    return m_pRenderer->AudioClock(ullTimestamp, ullQpc, ullQpcNow);
   else
     return S_FALSE;
 

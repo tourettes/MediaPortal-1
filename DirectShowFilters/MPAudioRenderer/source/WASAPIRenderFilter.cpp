@@ -453,7 +453,7 @@ HRESULT CWASAPIRenderFilter::EndOfStream()
   return S_OK;
 }
 
-HRESULT CWASAPIRenderFilter::AudioClock(ULONGLONG& pTimestamp, ULONGLONG& pQpc)
+HRESULT CWASAPIRenderFilter::AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG& ullQpcNow)
 {
   CAutoLock cAutoLock(&m_csClockLock);
 
@@ -468,10 +468,10 @@ HRESULT CWASAPIRenderFilter::AudioClock(ULONGLONG& pTimestamp, ULONGLONG& pQpc)
   if (qpc == 0)
     return S_FALSE;
 
-  UINT64 qpcNow = GetCurrentTimestamp() - m_ullHwQpc[m_dClockPosOut];
+  ullQpcNow -= m_ullHwQpc[m_dClockPosOut];
 
-  pTimestamp = cMulDiv64(clock, qpcNow, qpc) + m_ullHwClock[m_dClockPosOut];
-  pQpc = qpcNow + m_ullHwQpc[m_dClockPosOut];
+  ullTimestamp = cMulDiv64(clock, ullQpcNow, qpc) + m_ullHwClock[m_dClockPosOut];
+  ullQpc = ullQpcNow + m_ullHwQpc[m_dClockPosOut];
 
   return S_OK;
 }
@@ -480,8 +480,6 @@ void CWASAPIRenderFilter::UpdateAudioClock()
 {
   if (m_pAudioClock)
   {
-    CAutoLock cAutoLock(&m_csClockLock);
-
     UINT64 timestamp = 0;
     UINT64 qpc = 0;
     HRESULT hr = m_pAudioClock->GetPosition(&timestamp, &qpc);
@@ -499,6 +497,7 @@ void CWASAPIRenderFilter::UpdateAudioClock()
         hr = m_pAudioClock->GetPosition(&timestamp, &qpc);
         Log("UpdateAudioClock - error reading the position(2): (0x%08x)", hr);
         Sleep(1);
+        loop++;
       } while (hr == S_FALSE && loop < 5);
       
       if (hr != S_OK)
@@ -509,7 +508,9 @@ void CWASAPIRenderFilter::UpdateAudioClock()
     }
 
     UINT64 ullHwClock = cMulDiv64(timestamp, 10000000, m_nHWfreq);
-    
+  
+    CAutoLock cAutoLock(&m_csClockLock);
+
     if (m_ullPrevPos > ullHwClock)
     {
       UINT64 correction = m_ullPrevPos - ullHwClock + qpc - m_ullPrevQpc;

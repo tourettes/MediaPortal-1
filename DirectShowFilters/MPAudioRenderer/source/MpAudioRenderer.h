@@ -110,7 +110,7 @@ public:
   STDMETHOD(GetClockData)(CLOCKDATA* pClockData);
   STDMETHOD(SetEVRPresentationDelay)(DOUBLE pEVRDelay);
 
-  HRESULT AudioClock(UINT64& pTimestamp, UINT64& pQpc);
+  HRESULT AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG& ullQpcNow);
 
   // CMpcAudioRenderer
 private:

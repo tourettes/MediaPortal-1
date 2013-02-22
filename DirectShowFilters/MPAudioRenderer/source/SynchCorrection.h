@@ -66,11 +66,11 @@ public:
 
   // gets and sets the audio delay in 10 shake units
   void SetAudioDelay(INT64 delay);
-  INT64 GetAudioDelay() const;
+  INT64 GetAudioDelay();
 
   // gets and sets the audio delay required by the EVR presenter in 10 shake units
   void SetPresenterInducedAudioDelay(INT64 delay);
-  INT64 GetPresenterInducedAudioDelay() const;
+  INT64 GetPresenterInducedAudioDelay();
 
   // Recalculation of the delta value for the reference clock
   INT64 GetCorrectedTimeDelta(INT64 time, REFERENCE_TIME rtAHwTime, REFERENCE_TIME rtRCTime);
