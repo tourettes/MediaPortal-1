@@ -453,7 +453,7 @@ HRESULT CWASAPIRenderFilter::EndOfStream()
   return S_OK;
 }
 
-HRESULT CWASAPIRenderFilter::AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG& ullQpcNow)
+HRESULT CWASAPIRenderFilter::AudioClock(ULONGLONG& ullTimestamp, ULONGLONG& ullQpc, ULONGLONG ullQpcNow)
 {
   CAutoLock cAutoLock(&m_csClockLock);
 

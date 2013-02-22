@@ -114,8 +114,8 @@ void CSyncClock::GetClockData(CLOCKDATA* pClockData)
   INT64 llDurationSystem = m_llDurationSystem;
   INT64 llDurationHW = m_llDurationHW;
 
-  pClockData->driftMultiplier = 0;//llDurationSystem > 0 ? llDurationHW / llDurationSystem : 0;
-  pClockData->driftHWvsSystem = 0;//(llDurationHW - llDurationSystem) / 10000.0;
+  pClockData->driftMultiplier = llDurationSystem > 0 ? (double)llDurationHW / (double)llDurationSystem : 0;
+  pClockData->driftHWvsSystem = (double)(llDurationHW - llDurationSystem) / 10000.0;
   pClockData->currentDrift = m_dCurrentDrift;
   pClockData->resamplingAdjustment = m_dSuggestedAudioMultiplier;;
 }
