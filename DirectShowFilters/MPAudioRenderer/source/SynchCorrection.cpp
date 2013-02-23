@@ -250,7 +250,7 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
       }
     }
   }
-  else if (totalAudioDrift > ALLOWED_DRIFT && bias > 1.0)
+  else if (totalAudioDrift > ALLOWED_DRIFT && bias < 1.0)
   { // we've stretched too much shift down for a while
     double msDrift = totalAudioDrift / 10000.0;
     double quickCorrection = 1.0;
@@ -263,7 +263,7 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
     if (quickCorrection > 5.0) quickCorrection = 5.0;
     ret = ret * (1.0 / (1 + (CORRECTION_RATE-1) * quickCorrection));
   }
-  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0 && bias < 1.0)
+  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0 && bias > 1.0)
   { // haven't streched enough
     double msDrift = totalAudioDrift / -10000.0;
     double quickCorrection = 1.0;
