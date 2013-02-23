@@ -218,8 +218,9 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
 
   double ret = bias* adjustment;
   double totalAudioDrift = CalculateDrift(rtAHwTime, rtRCTime - m_rtStart) + m_dAudioDelay +m_dEVRAudioDelay;
- 
-  if (ret > 1.0 - QUALITY_BIAS_LIMIT &&  ret < 1.0 + QUALITY_BIAS_LIMIT)
+  bool bQuality = bias > 1.0 - QUALITY_BIAS_LIMIT &&  bias < 1.0 + QUALITY_BIAS_LIMIT;
+
+  if (bQuality)
   {
     ret = 1.0; // 1 to 1 playback unless proved otherwise
     if (m_bQualityCorrectionOn) // we are correcting drift
@@ -250,7 +251,7 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
       }
     }
   }
-  else if (totalAudioDrift > ALLOWED_DRIFT && bias < 1.0)
+  else if (totalAudioDrift > ALLOWED_DRIFT && (!bQuality || bias < 1.0))
   { // we've stretched too much shift down for a while
     double msDrift = totalAudioDrift / 10000.0;
     double quickCorrection = 1.0;
@@ -263,7 +264,7 @@ double SynchCorrection::GetRequiredAdjustment(REFERENCE_TIME rtAHwTime, REFERENC
     if (quickCorrection > 5.0) quickCorrection = 5.0;
     ret = ret * (1.0 / (1 + (CORRECTION_RATE-1) * quickCorrection));
   }
-  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0 && bias > 1.0)
+  else if (totalAudioDrift < ALLOWED_DRIFT * -1.0 && (!bQuality || bias > 1.0))
   { // haven't streched enough
     double msDrift = totalAudioDrift / -10000.0;
     double quickCorrection = 1.0;
